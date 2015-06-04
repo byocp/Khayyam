@@ -1,0 +1,17 @@
+F:\vision_sensor\human_machine_interface\VisionSensor\bin\Release\VisionSensor.exe.config
+F:\vision_sensor\human_machine_interface\VisionSensor\obj\Release\VisionSensor.csprojResolveAssemblyReference.cache
+F:\vision_sensor\human_machine_interface\VisionSensor\obj\Release\VisionSensor.VisionSensorScreenPlot.resources
+F:\vision_sensor\human_machine_interface\VisionSensor\obj\Release\VisionSensor.VisionSensorScreen.resources
+F:\vision_sensor\human_machine_interface\VisionSensor\obj\Release\VisionSensor.Properties.Resources.resources
+F:\vision_sensor\human_machine_interface\VisionSensor\obj\Release\VisionSensor.csproj.GenerateResource.Cache
+F:\vision_sensor\human_machine_interface\VisionSensor\bin\Release\VisionSensor.exe.manifest
+F:\vision_sensor\human_machine_interface\VisionSensor\bin\Release\VisionSensor.application
+F:\vision_sensor\human_machine_interface\VisionSensor\bin\Release\VisionSensor.exe
+F:\vision_sensor\human_machine_interface\VisionSensor\bin\Release\VisionSensor.pdb
+F:\vision_sensor\human_machine_interface\VisionSensor\bin\Release\MatlabFunc.dll
+F:\vision_sensor\human_machine_interface\VisionSensor\bin\Release\NLog.dll
+F:\vision_sensor\human_machine_interface\VisionSensor\bin\Release\TwinCAT.Ads.dll
+F:\vision_sensor\human_machine_interface\VisionSensor\obj\Release\VisionSensor.exe.manifest
+F:\vision_sensor\human_machine_interface\VisionSensor\obj\Release\VisionSensor.application
+F:\vision_sensor\human_machine_interface\VisionSensor\obj\Release\VisionSensor.exe
+F:\vision_sensor\human_machine_interface\VisionSensor\obj\Release\VisionSensor.pdb
