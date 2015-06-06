@@ -1,7 +1,6 @@
-function [area, minor_axis, major_axis, equiv_diam, contam_level_num_per_sample, ...
-          memAv, memUs, contam_level_gram_per_liter, contam_level_num_per_liter] = main(file_name, plotVal)
+function output = main(file_full_path, plotVal)
 %% Load config
-config = load_config('C:/Users/Minghua/Desktop/conf.txt');
+config = load_config('F:\vision_sensor_pedram\conf.txt');
 
 %% Initialization
 number     = zeros(1, config.moving_average_length);
@@ -16,10 +15,10 @@ idx  = 1;
 while (idx <= config.moving_average_length)
     %% Input
     % Test
-    %raw_image = importdata(strcat('C:\Users\Minghua\Desktop\vision_sensor_pedram\particle_counter\samples\test_bench','.jpg'));
+    raw_image =  importdata(file_full_path);
 
     % Original
-    raw_image = automated_frame_capture(config.lucam_snapshot_exposure, config.lucam_gain);
+    %raw_image = automated_frame_capture(config.lucam_snapshot_exposure, config.lucam_gain);
     
     %% Camera Connection
     if raw_image == -1
@@ -70,19 +69,36 @@ while (idx <= config.moving_average_length)
     [SV] = memory;
     memUs = SV.MemUsedMATLAB / 1000000;
     memAv = SV.MemAvailableAllArrays / 1000000;
-    clear raw_image cropped_raw_image
 
     idx = idx + 1;
 end
-%% Output
-number_total = sum(number);
-volume_total_cubic_millimeter = sum(volume);
-% Contamination Level
-contam_level_num_per_sample = round(number_total / config.moving_average_length);
-contam_level_num_per_liter  = round((number_total / config.moving_average_length) * 10^6 / config.volume_of_sample_cubic_millimeter);
-contam_level_gram_per_liter = (volume_total_cubic_millimeter / config.moving_average_length) * config.density_of_material_kg_per_cubic_meter / config.volume_of_sample_cubic_millimeter ;
-contam_level_gram_per_liter = str2num(num2str(contam_level_gram_per_liter,2));
 
+out = compute_concentration(number, volume, config);
+contam_level_num_per_sample = out(1);
+contam_level_num_per_liter  = out(2);
+contam_level_gram_per_liter = out(3);
+
+%% C# GUI
+%output = [area, minor_axis, major_axis, equiv_diam, contam_level_num_per_sample, ...
+%          memAv, memUs, contam_level_gram_per_liter, contam_level_num_per_liter];
+%% MATLAB GUI
+output.area       = area;
+output.minor_axis = minor_axis;
+output.major_axis = major_axis;
+output.equiv_diam = equiv_diam;
+output.centroid   = centroid; 
+output.memAv      = memAv;
+output.memUs      = memUs;
+output.config     = config;
+output.number     = number;
+calculation.raw_image         = raw_image;
+calculation.cropped_raw_image = cropped_raw_image;
+output.cropped_raw_image           = cropped_raw_image;
+output.contam_level_num_per_sample = contam_level_num_per_sample;
+output.contam_level_gram_per_liter = contam_level_gram_per_liter;
+output.contam_level_num_per_liter  = contam_level_num_per_liter;
+
+clearvars -except output
 end
 
 function plotImage(vargin)

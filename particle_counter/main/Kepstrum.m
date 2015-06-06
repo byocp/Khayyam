@@ -90,7 +90,7 @@ if file_name==0
     clear all
     Kepstrum
 else
-    output = importfile({strcat(file_path, file_name), 'singlePhoto'});
+    output = importdata(strcat(file_path, file_name));
     file_name = file_name(1 : end-4);
     matlab_config_path = '../../conf.txt';
     config = load_config(matlab_config_path);
