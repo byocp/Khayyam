@@ -1,6 +1,9 @@
 function output = main(file_full_path, plotVal)
+global  input_image_type particle_diameter_type parameter_over_time
+
 %% Load config
-config = load_config('F:\vision_sensor_pedram\conf.txt');
+config = load_config('/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/conf.txt');
+% config = load_config('C:\Users\Minghua\Desktop\conf.txt');
 
 %% Initialization
 number     = zeros(1, config.moving_average_length);
@@ -15,11 +18,10 @@ idx  = 1;
 while (idx <= config.moving_average_length)
     %% Input
     % Test
-    raw_image =  importdata(file_full_path);
-
-    % Original
+    %raw_image =  importdata('/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/particle_counter/samples/10.jpg');
+    raw_image = importdata(file_full_path);
+    %Original
     %raw_image = automated_frame_capture(config.lucam_snapshot_exposure, config.lucam_gain);
-    
     %% Camera Connection
     if raw_image == -1
        number     = -1;
@@ -36,12 +38,13 @@ while (idx <= config.moving_average_length)
     end
     
     %% Initialization
-    output = image_initialization(raw_image, config);   
+    output            = image_initialization(raw_image, config);
+    raw_image         = output.raw_image;
     cropped_raw_image = output.cropped_raw_image;
-    config = output.config;
-
+    config            = output.config;
     %% Particle Counter
     calculation  = particle_counter({cropped_raw_image, config});
+
     % Results
     if ~isempty(calculation.centroid)
         number(idx) = calculation.number;
@@ -62,14 +65,18 @@ while (idx <= config.moving_average_length)
     end
 
     if strcmp(plotVal, 'true')
-        plotImage({file_name, cropped_raw_image, calculation.centroid});
+        plotImage({file_full_path, cropped_raw_image, calculation.centroid});
     end
     clear calculation
     %% memory-usage monitoring
-    [SV] = memory;
-    memUs = SV.MemUsedMATLAB / 1000000;
-    memAv = SV.MemAvailableAllArrays / 1000000;
-
+    if isunix
+        memUs = 0;
+        memAv = 0;
+    else
+        [SV] = memory;
+        memUs = SV.MemUsedMATLAB / 1000000;
+        memAv = SV.MemAvailableAllArrays / 1000000;
+    end
     idx = idx + 1;
 end
 
@@ -91,17 +98,17 @@ output.memAv      = memAv;
 output.memUs      = memUs;
 output.config     = config;
 output.number     = number;
-calculation.raw_image         = raw_image;
-calculation.cropped_raw_image = cropped_raw_image;
+output.raw_image         = raw_image;
 output.cropped_raw_image           = cropped_raw_image;
 output.contam_level_num_per_sample = contam_level_num_per_sample;
 output.contam_level_gram_per_liter = contam_level_gram_per_liter;
 output.contam_level_num_per_liter  = contam_level_num_per_liter;
 
-clearvars -except output
+clearvars -except output input_image_type particle_diameter_type parameter_over_time
 end
 
 function plotImage(vargin)
+global  input_image_type particle_diameter_type parameter_over_time
 file_name = vargin{1};
 raw_image = vargin{2};
 centroid  = vargin{3};
@@ -111,7 +118,7 @@ f = figure('visible', 'off');
 cla reset;
 imshow(imresize(raw_image, scale_down_ratio),[],'Border','tight');
 print (f, '-r80', '-djpeg', strcat(file_name, '_raw.jpeg'));
-saveas(f, strcat(file_name, '_raw.jpeg'));
+saveas(f, strcat(file_name, '_raw.jpeg'))
 
 %imshow(imresize(initImage,ratioScaleDown),[], 'Parent', handles.axes7);
 for  particle_id = 0 : size(centroid, 2) - 1
@@ -122,7 +129,7 @@ for  particle_id = 0 : size(centroid, 2) - 1
 end
 print (f, '-r80', '-djpeg', strcat(file_name,'_proc.jpeg'));
 saveas(f, strcat(file_name, '_proc.jpeg'));
-
-clear all;
-close all;
+    
+    
+clearvars -except input_image_type particle_diameter_type parameter_over_time
 end

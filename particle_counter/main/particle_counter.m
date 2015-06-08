@@ -69,7 +69,7 @@ for k = 0 : size(boundaries,1) - 1
         statement.filtered.equivDiameter(idx)   = statement.everything.equivDiameter(k+1);
         statement.filtered.roundnessMetric(idx) = statement.everything.roundnessMetric(k+1);
         statement.filtered.identifier(idx)      = k+1;
-        statement.filtered.volume(idx)          = (4/3) * pi * statement.filtered.equivDiameter(idx)^3;
+        statement.filtered.volume(idx)          = (4/3) * pi * (statement.filtered.equivDiameter(idx)/2)^3;
         idx = idx + 1;
     end
 end

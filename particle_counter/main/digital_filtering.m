@@ -3,7 +3,7 @@ function output = digital_filtering(raw_image, config)
 if config.enhance_image_adapthisteq 
     enhanced_image = adapthisteq(raw_image);
 elseif config.enhance_image_imadjust
-    enhanced_image = imadjust(raw_image, [0.2 0.5], [0.4 0.5]);
+    enhanced_image = imadjust(raw_image, [0.05 0.1], [0.25 0.5]);
 elseif config.enhance_image_decorrstretch
     enhanced_image = decorrstretch(raw_image);
 else
@@ -94,5 +94,7 @@ if config.investigation_process
     output.fig_stages_of_process = fig_stages_of_process;
 end
 
-output.processed_image   = image_ready;
-output.boundaries        = B;
+output.processed_image       = image_ready;
+output.enhanced_image        = enhanced_image;
+output.image_black_and_white = image_black_and_white;
+output.boundaries            = B;

@@ -284,6 +284,7 @@ i = 1;
 if strcmp(get(handles.pushbutton1, 'String'), 'Pause')
     set(handles.pushbutton1, 'String', 'Start');
     Flag.Start = 0;
+    runtime
 elseif strcmp(get(handles.pushbutton1, 'String'), 'Start')
     cla(handles.axes1);
     set(handles.pushbutton1,'String','Pause');
@@ -304,37 +305,40 @@ while Flag.Start == 1 && Flag.Time <= upperbound
         raw_image = sequence_of_images_video{Flag.Time};
     elseif strcmp(input_image_type,'lucam_camera')==1
         %--lucam_camera--
-        try
-            LuDispatcher(-1, 1); % connect
-        catch
-            LuDispatcher(-2, 1); %disconnect
-            LuDispatcher(-1, 1);
-        end
-        calculation = main('', 'true');
-        handles.calculation = calculation;
-        raw_image = calculation.raw_image;
+%         try
+%             LuDispatcher(-1, 1); % connect
+%         catch
+%             LuDispatcher(-2, 1); %disconnect
+%             LuDispatcher(-1, 1);
+%         end
+        calculation               = main('', 'true');
+
     elseif strcmp(input_image_type,'single_image')==1
         %--single_image--
         %[file_name, file_path] = uigetfile({'*.jpg;*.tif;*.png;*.gif', ...
         %                                    'All Image Files'; '*.*', ...
         %                                    'All Files' }, 'Kepstrum', '..\Samples');
-        file_path = 'F:\vision_sensor_pedram\particle_counter\samples\';
+        file_path = '/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/particle_counter/samples/';
         file_name = strcat(num2str(Flag.Time), '.jpg');
         if file_name == 0
             close all
             clear all
             runtime
         else
-            Flag.Start = 0;
+            Flag.Start = 1;
         end
         calculation = main([file_path, file_name], 'false');
-        handles.calculation = calculation;
-        raw_image = calculation.raw_image;
     end    
+    cropped_raw_image         = calculation.cropped_raw_image;
+    raw_image                 = calculation.raw_image;
+    handles.calculation       = calculation;
+    handles.cropped_raw_image = cropped_raw_image;
+    handles.raw_image         = raw_image;
+
     %% plotImage
-    plotImage(hObject, eventdata, handles)
+    plotImage(hObject, eventdata, handles);
     %% plotHist
-    plotHist(hObject, eventdata, handles)
+    plotHist(hObject, eventdata, handles);
     %% plotVsTime
     if strcmp(parameter_over_time, 'mean')
         handles.plotVsTime(i) = mean(calculation.(particle_diameter_type));
@@ -345,12 +349,29 @@ while Flag.Start == 1 && Flag.Time <= upperbound
     %% save
     filename = strcat(num2str(Flag.Time), '.mat');
     TodayDate = date;
-    if ~exist(['Images\', TodayDate],'dir')
-        mkdir('Images\', TodayDate)
+    if ~exist(['dataset_evaluation\', TodayDate],'dir')
+        mkdir('dataset_evaluation\', TodayDate)
     end
-    save(['Images\', TodayDate, '\', filename], 'calculation', 'raw_image');
+    
+    contamination_hist(:,Flag.Time) = [Flag.Time; calculation.contam_level_gram_per_liter];
+    
     cmap = colormap('gray');
-    imwrite(raw_image, cmap, ['Images\', TodayDate, '\', num2str(Flag.Time), '.jpg'], 'jpeg');
+    if isunix
+        save(['dataset_evaluation/', TodayDate, '/', filename], 'calculation', 'raw_image', 'cropped_raw_image');
+        imwrite(calculation.raw_image,         cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), '.jpg'], 'jpeg');
+        imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), 'C.jpg'], 'jpeg');
+        fileID = fopen(['dataset_evaluation/', TodayDate, '/', 'contamination.txt'],'w');
+        fprintf(fileID,'%6.2f %12.8f\r\n', contamination_hist);
+        fclose(fileID);
+    else
+        save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation', 'raw_image', 'cropped_raw_image');
+        imwrite(calculation.raw_image,         cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), '.jpg'], 'jpeg');
+        imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'C.jpg'], 'jpeg');
+        fileID = fopen(['dataset_evaluation\', TodayDate, '\', 'contamination.txt'],'w');
+        fprintf(fileID,'%6.2f %12.8f\r\n', contamination_hist);
+        fclose(fileID);
+    end
+
 
     guidata(hObject,handles);
     set(handles.edit4, 'String', i);
@@ -359,12 +380,11 @@ end
 
 guidata(hObject,handles);
 
-function plotHist(hObject, eventdata, handles)
+function [C, x] = plotHist(hObject, eventdata, handles)
 global particle_diameter_type
 guidata(hObject,handles);
 option_percentage = get(handles.checkbox4, 'value');
 calculation       = handles.calculation; 
-
 if exist('calculation','var')
     major_axis = calculation.major_axis;
     minor_axis = calculation.minor_axis;
@@ -481,9 +501,7 @@ if strcmp(get(handles.pushbutton1, 'String'), 'Start') && ~(get(handles.slider1,
 end
 
 if isfield(handles,'calculation')
-    option_percentage = get(handles.checkbox4,'value');
-    calculation = handles.calculation;
-    plotHist(hObject, eventdata, handles,{particle_diameter_type, option_percentage, calculation});
+    plotHist(hObject, eventdata, handles);
 end
 
 handles.Percentage = val;
