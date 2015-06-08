@@ -82,9 +82,15 @@ function pushbutton1_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+clc
+set(handles.output, 'HandleVisibility', 'off');
+close all;
+set(handles.output, 'HandleVisibility', 'on');
+
 [file_name, file_path]=uigetfile({'*.jpg;*.tif;*.png;*.gif','All Image Files';...
     '*.*','All Files' },'Kepstrum',...
-    '..\Samples');
+    '\\nasserver\Public\0- Projects\PreDevelopment\Biye\Vision Sensor\Data\08-Jun-2015');
+%     '..\Samples');
 if file_name==0
     close all
     clear all
@@ -94,7 +100,7 @@ else
     file_name = file_name(1 : end-4);
     matlab_config_path = '../../conf.txt';
     config = load_config(matlab_config_path);
-    output = image_initialization(output{1}, config);
+    output = image_initialization(output, config);
     cropped_raw_image = output.cropped_raw_image;
     config            = output.config;
     particle_counter({cropped_raw_image, config, file_path, file_name});

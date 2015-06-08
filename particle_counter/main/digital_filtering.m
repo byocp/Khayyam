@@ -17,7 +17,11 @@ if config.gaussian_filter
 end
 %% Converts a grayscale image to a binary image
 % THIS STAGE IS VERY IMPORTANT
-threshold_image_stage1 = graythresh(enhanced_image);
+% threshold_image_stage1 = graythresh(enhanced_image);
+threshold_image_stage1 = 0.6;
+resized = reshape(enhanced_image,[],1);
+figure(9)
+hist(resized,300)
 image_black_and_white = im2bw(enhanced_image, threshold_image_stage1);
 
 if config.boost
