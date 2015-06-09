@@ -353,7 +353,10 @@ while Flag.Start == 1 && Flag.Time <= upperbound
         mkdir('dataset_evaluation\', TodayDate)
     end
     
-    contamination_hist(:,Flag.Time) = [Flag.Time; calculation.contam_level_gram_per_liter];
+    strSystemTime = floor(clock);
+    strSystemTime = [int2str(strSystemTime(4)) ':' int2str(strSystemTime(5)) ':' int2str(strSystemTime(6))];
+%     contamination_hist(:,Flag.Time) = [Flag.Time; calculation.contam_level_gram_per_liter];
+    contamination_hist(:,Flag.Time) = [strSystemTime; calculation.contam_level_gram_per_liter];
     
     cmap = colormap('gray');
     if isunix
@@ -372,7 +375,8 @@ while Flag.Start == 1 && Flag.Time <= upperbound
         imwrite(calculation.raw_image,         cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), '.jpg'], 'jpeg');
         imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'C.jpg'], 'jpeg');
         fileID = fopen(['dataset_evaluation\', TodayDate, '\', 'contamination.txt'],'w');
-        fprintf(fileID,'%6.2f %12.8f\r\n', contamination_hist);
+%         fprintf(fileID,'%6.2f %12.8f\r\n', contamination_hist);
+        fprintf(fileID,'%8s %12.8f\r\n', contamination_hist);
         fclose(fileID);
     end
 
