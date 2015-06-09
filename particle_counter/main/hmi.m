@@ -366,7 +366,7 @@ while Flag.Start == 1 && Flag.Time <= upperbound
         imwrite(calculation.raw_image,         cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), '.jpg'], 'jpeg');
         imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), 'C.jpg'], 'jpeg');
         fileID = fopen(['dataset_evaluation/', TodayDate, '/', 'contamination.txt'],'w');
-        fprintf(fileID,'%6.2f %12.8f\r\n', contamination_hist);
+        fprintf(fileID,'%8s %12.8f\r\n', contamination_hist);
         fclose(fileID);
     else
 %         save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation', 'raw_image', 'cropped_raw_image');
