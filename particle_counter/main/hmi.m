@@ -358,8 +358,8 @@ while Flag.Start == 1 && Flag.Time <= upperbound
     cmap = colormap('gray');
     if isunix
 %         save(['dataset_evaluation/', TodayDate, '/', filename], 'calculation', 'raw_image', 'cropped_raw_image');
-        calculation = rmfield(calculation,{'raw_image','cropped_raw_image'});
-        save(['dataset_evaluation/', TodayDate, '/', filename], 'calculation');
+        calculation_noimage = rmfield(calculation,{'raw_image','cropped_raw_image'});
+        save(['dataset_evaluation/', TodayDate, '/', filename], 'calculation_noimage');
         imwrite(calculation.raw_image,         cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), '.jpg'], 'jpeg');
         imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), 'C.jpg'], 'jpeg');
         fileID = fopen(['dataset_evaluation/', TodayDate, '/', 'contamination.txt'],'w');
@@ -367,8 +367,8 @@ while Flag.Start == 1 && Flag.Time <= upperbound
         fclose(fileID);
     else
 %         save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation', 'raw_image', 'cropped_raw_image');
-        calculation = rmfield(calculation,{'raw_image','cropped_raw_image'});
-        save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation');
+        calculation_noimage = rmfield(calculation,{'raw_image','cropped_raw_image'});
+        save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation_noimage');
         imwrite(calculation.raw_image,         cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), '.jpg'], 'jpeg');
         imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'C.jpg'], 'jpeg');
         fileID = fopen(['dataset_evaluation\', TodayDate, '\', 'contamination.txt'],'w');
