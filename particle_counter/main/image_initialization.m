@@ -51,6 +51,5 @@ normalized_image = double(cropped_raw_image / max(cropped_raw_image(:)));
 output.raw_image         = raw_image_gray;
 output.cropped_raw_image = normalized_image;
 output.config            = config;
-
 end
 

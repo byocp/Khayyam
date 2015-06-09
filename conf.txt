@@ -21,6 +21,6 @@ enhance_image_adapthisteq, 0
 enhance_image_imadjust, 0
 enhance_image_decorrstretch, 0
 gaussian_filter, 0
-investigation_process, 0
-investigation_final, 0
+investigation_process, 1
+investigation_final, 1
 investigation_excel_report, 0
