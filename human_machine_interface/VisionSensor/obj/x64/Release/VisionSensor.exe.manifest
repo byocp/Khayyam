@@ -90,14 +90,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="VisionSensor.exe" size="40360">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="VisionSensor.exe" size="39848">
       <assemblyIdentity name="VisionSensor" version="1.0.0.0" language="neutral" processorArchitecture="amd64" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>3KxMyXq6ZtOqtoca1hb2NUZQJrqA2DlSdOsfpz3M5/s=</dsig:DigestValue>
+        <dsig:DigestValue>SkKLq4QTHT20bBog9UCRiqlv38BDh6tpuQJnSim+uxQ=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
