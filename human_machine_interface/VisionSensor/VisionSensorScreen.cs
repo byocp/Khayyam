@@ -465,16 +465,14 @@ namespace VisionSensor
                 //Arcive in .txt file
                 using (StreamWriter sw = File.AppendText(data_file + DateTime.Now.ToString("yyyyMMdd") + ".txt"))
                 {
-                    sw.WriteLine("Contamination per sample," + DateTime.Now.ToString("h:mm:ss tt") + "," + numperL.ToString() + "," + great1_val.ToString() + "," + great2_val.ToString() + "," + great3_val.ToString());
-
-                    sw.WriteLine("Points>0.1," + DateTime.Now.ToString("h:mm:ss tt") + "," + great1_val.ToString());
-                    sw.WriteLine("Points>0.5," + DateTime.Now.ToString("h:mm:ss tt") + "," + great2_val.ToString());
-                    sw.WriteLine("Points>1.0," + DateTime.Now.ToString("h:mm:ss tt") + "," + great3_val.ToString());
-
-                    sw.WriteLine("Number_per_L," + DateTime.Now.ToString("h:mm:ss tt") + "," + DateTime.Now.ToString("yyyyMMdd") + "," + numperL);
-                    sw.WriteLine("Grams_per_L," + DateTime.Now.ToString("h:mm:ss tt") + "," + DateTime.Now.ToString("yyyyMMdd") + "," + gramsperL);
-
-                    sw.Write("EquivD," + DateTime.Now.ToString("h:mm:ss tt") + "," + DateTime.Now.ToString("yyyyMMdd"));
+                    sw.WriteLine(DateTime.Now.ToString("yyyyMMdd") + "," + DateTime.Now.ToString("h:mm:ss tt"));
+                    sw.WriteLine("Contamination per sample," + numperL.ToString());
+                    sw.WriteLine("Points>0.1," +  great1_val.ToString());
+                    sw.WriteLine("Points>0.4," +  great2_val.ToString());
+                    sw.WriteLine("Points>1.0," +  great3_val.ToString());
+                    sw.WriteLine("Number_per_L" + "," + numperL);
+                    sw.WriteLine("Grams_per_L" + "," + gramsperL);
+                    sw.Write("Histogram");
                     for (int i = 0; i < 20; i++)
                     {
                         sw.Write("," + equivDPlot[i].ToString());
@@ -483,33 +481,34 @@ namespace VisionSensor
                     //Write newline
                     sw.WriteLine();
                     //Equiv Diameter
-                    sw.Write("EquivD," + DateTime.Now.ToString("h:mm:ss tt"));
+                    sw.Write("EquivD");
                     for (int i = 0; i < dblpointsEquivDiam.GetLength(0); i++)
                     {
                         sw.Write("," + dblpointsEquivDiam[i, 0]);
                     }
                     sw.WriteLine();
                     // Area
-                    sw.Write("Area," + DateTime.Now.ToString("h:mm:ss tt") + "," + DateTime.Now.ToString("ddmmyyyy"));
+                    sw.Write("Area");
                     for (int i = 0; i < 20; i++)
                     {
                         sw.Write("," + areaPlot[i].ToString());
                     }
                     sw.WriteLine();
+
                     // MinorAxis
-                    sw.Write("MinorAxis," + DateTime.Now.ToString("h:mm:ss tt"));
-                    for (int i = 0; i < 20; i++)
-                    {
-                        sw.Write("," + minAPlot[i].ToString());
-                    }
-                    sw.WriteLine();
-                    // MajorAxis
-                    sw.Write("MajorAxis," + DateTime.Now.ToString("h:mm:ss tt"));
-                    for (int i = 0; i < 20; i++)
-                    {
-                        sw.Write("," + maxAPlot[i].ToString());
-                    }
-                    sw.WriteLine();
+                    //sw.Write("MinorAxis," + DateTime.Now.ToString("h:mm:ss tt"));
+                    //for (int i = 0; i < 20; i++)
+                    //{
+                    //    sw.Write("," + minAPlot[i].ToString());
+                    //}
+                    //sw.WriteLine();
+                    //// MajorAxis
+                    //sw.Write("MajorAxis," + DateTime.Now.ToString("h:mm:ss tt"));
+                    //for (int i = 0; i < 20; i++)
+                    //{
+                    //    sw.Write("," + maxAPlot[i].ToString());
+                    //}
+                    //sw.WriteLine();
 
                     // Close
                     sw.Close();
