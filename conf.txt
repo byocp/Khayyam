@@ -1,18 +1,18 @@
-lucam_snapshot_exposure, 1
+lucam_snapshot_exposure, 0.1
 lucam_gain, 2
 
 crop_option, 1
-half_of_width_millimeter, 20
+half_of_width_millimeter, 15
 half_of_length_millimeter, 10
 density_of_material_kg_per_cubic_meter, 2700
 volume_of_total_liquid_in_system_liter, 1.7
-max_particle_diameter_millimeter, 2.5
-min_particle_diameter_millimeter, 0.4
-pixel_area_squared_millimeter, 0.00059
-pixel_length_millimeter, 0.024
+max_particle_diameter_millimeter, 3.5
+min_particle_diameter_millimeter, 0.3
+pixel_area_squared_millimeter, 0.00072
+pixel_length_millimeter, 0.027305
 moving_average_length, 1
 threshold_circularity_1, 0.96
-threshold_circularity_2, 0.2
+threshold_circularity_2, 0.1
 bubble_detection_threshold, 0.7
 
 
@@ -24,3 +24,6 @@ gaussian_filter, 0
 investigation_process, 0
 investigation_final, 0
 investigation_excel_report, 0
+
+otsu_method, 0
+image_threshold, 0.48

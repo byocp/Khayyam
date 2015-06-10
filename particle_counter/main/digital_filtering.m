@@ -17,7 +17,12 @@ if config.gaussian_filter
 end
 %% Converts a grayscale image to a binary image
 % THIS STAGE IS VERY IMPORTANT
-threshold_image_stage1 = graythresh(enhanced_image);
+threshold_image_stage1 = config.image_threshold;
+
+if config.otsu_method
+    threshold_image_stage1 = graythresh(enhanced_image);
+end
+
 image_black_and_white = im2bw(enhanced_image, threshold_image_stage1);
 
 if config.boost

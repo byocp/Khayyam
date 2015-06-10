@@ -465,14 +465,14 @@ namespace VisionSensor
                 //Arcive in .txt file
                 using (StreamWriter sw = File.AppendText(data_file + DateTime.Now.ToString("yyyyMMdd") + ".txt"))
                 {
-                    sw.WriteLine(DateTime.Now.ToString("h:mm:ss tt") + "," + DateTime.Now.ToString("yyyyMMdd"));
+                    sw.WriteLine(DateTime.Now.ToString("yyyyMMdd") + "," + DateTime.Now.ToString("h:mm:ss tt"));
                     sw.WriteLine("Contamination per sample," + numperL.ToString());
                     sw.WriteLine("Points>0.1," +  great1_val.ToString());
-                    sw.WriteLine("Points>0.5," +  great2_val.ToString());
+                    sw.WriteLine("Points>0.4," +  great2_val.ToString());
                     sw.WriteLine("Points>1.0," +  great3_val.ToString());
                     sw.WriteLine("Number_per_L" + "," + numperL);
                     sw.WriteLine("Grams_per_L" + "," + gramsperL);
-                    sw.Write("EquivD");
+                    sw.Write("Histogram");
                     for (int i = 0; i < 20; i++)
                     {
                         sw.Write("," + equivDPlot[i].ToString());
