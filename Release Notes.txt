@@ -1,0 +1,5 @@
+Version: 0.0
+Notes:
+	- Initial release to Austria (not exactly)
+	- Compiled hmi.m
+	- Release to Austria does NOT have threshold options in conf.txt
