@@ -359,7 +359,7 @@ while Flag.Start == 1 && Flag.Time <= upperbound
     for k = 1:20
         histogram = [histogram sum(calculation.equiv_diam<k/10 & calculation.equiv_diam>(k-1)/10)];
     end
-    strSystemTime = m2xdate(now);
+    sSystemTime = m2xdate(now);
     contamination_hist = [strSystemTime, calculation.contam_level_gram_per_liter, calculation.contam_level_num_per_sample, histogram];
     
     cmap = colormap('gray');
