@@ -446,7 +446,6 @@ if exist('calculation','var')
 end
 
 function plotImage(hObject, eventdata, handles)
-global Flag
 guidata(hObject,handles)
 cropped_raw_image = handles.calculation.cropped_raw_image;
 centroid          = handles.calculation.centroid;
