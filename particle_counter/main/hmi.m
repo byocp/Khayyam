@@ -152,32 +152,6 @@ guidata(hObject,handles)
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 end
 
-function tbxTime_Callback(hObject, eventdata, handles)
-% hObject    handle to tbxTime (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-textValue = str2num( get(handles.tbxTime,'String') );
-set(handles.tbxTime,'Value',textValue)
-
-% Hints: get(hObject,'String') returns contents of tbxTime as text
-%        str2double(get(hObject,'String')) returns contents of tbxTime as a double
-end
-
-
-% --- Executes during object creation, after setting all properties.
-function tbxTime_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to tbxTime (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-end
-
-
 % --- Executes on button press in btnRenew.
 function btnRenew_Callback(hObject, eventdata, handles)
 % hObject    handle to btnRenew (see GCBO)
@@ -331,7 +305,7 @@ while Flag.Start == 1 && Flag.Time <= upperbound
 
 
     guidata(hObject,handles);
-    set(handles.tbxTime, 'String', i);
+    set(handles.tbxTime, 'Value', int2str(i));
     i = i + 1;
 end
 
