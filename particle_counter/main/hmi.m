@@ -40,10 +40,13 @@ end
 if nargout
     [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
 else
-    gui_mainfcn(gui_State, varargin{:});
-    
-
-
+    try
+        gui_mainfcn(gui_State, varargin{:});
+    catch ERROR
+        logError = fopen('ERROR.txt','a');
+        fprintf(logError,['%-' int2str(length(ERROR.message)) 's\r\n'],ERROR.message);
+        fclose(logError);
+    end
     addpath('Lumenera Matlab Driver V2.0.1 NEW 64 Bit')
 end
 % End initialization code - DO NOT EDIT
@@ -352,36 +355,40 @@ while Flag.Start == 1 && Flag.Time <= upperbound
     if ~exist(['dataset_evaluation\', TodayDate],'dir')
         mkdir('dataset_evaluation\', TodayDate)
     end
-    
-%    strSystemTime = floor(clock);
-    strSystemTime = now;
-%    strSystemTime = [int2str(strSystemTime(4)) ':' int2str(strSystemTime(5)) ':' int2str(strSystemTime(6))];
-%     contamination_hist(:,Flag.Time) = [Flag.Time; calculation.contam_level_gram_per_liter];
-    contamination_hist(:,Flag.Time) = [strSystemTime; calculation.contam_level_gram_per_liter];
+    histogram = []; 
+    for k = 1:20
+        histogram = [histogram sum(calculation.equiv_diam<k/10 & calculation.equiv_diam>(k-1)/10)];
+    end
+    strSystemTime = m2xdate(now);
+    contamination_hist = [strSystemTime, calculation.contam_level_gram_per_liter, calculation.contam_level_num_per_sample, histogram];
     
     cmap = colormap('gray');
     if isunix
-%         save(['dataset_evaluation/', TodayDate, '/', filename], 'calculation', 'raw_image', 'cropped_raw_image');
         calculation_noimage = rmfield(calculation,{'raw_image','cropped_raw_image'});
         save(['dataset_evaluation/', TodayDate, '/', filename], 'calculation_noimage');
         imwrite(calculation.raw_image,         cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), '.jpg'], 'jpeg');
         imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), 'C.jpg'], 'jpeg');
-        fileID = fopen(['dataset_evaluation/', TodayDate, '/', 'contamination.txt'],'w');
-        fprintf(fileID,'%8f %12.8f\r\n', contamination_hist);
+        saveScatter = getframe(handles.axes7);
+        saveScatter = frame2im(saveScatter);
+        imwrite(saveScatter,['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), 'S.jpg'], 'jpeg');        
+        fileID = fopen(['dataset_evaluation/', TodayDate, '/', 'contamination.txt'],'a');
+        fprintf(fileID,'%8f %12.8f %8f\r\n', contamination_hist);
         fclose(fileID);
     else
-%         save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation', 'raw_image', 'cropped_raw_image');
         calculation_noimage = rmfield(calculation,{'raw_image','cropped_raw_image'});
         save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation_noimage');
+        % save raw image, cropped image, and image with scatters represnting the particle been counted
         imwrite(calculation.raw_image,         cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), '.jpg'], 'jpeg');
-        imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'C.jpg'], 'jpeg');
-        fileID = fopen(['dataset_evaluation\', TodayDate, '\', 'contamination.txt'],'w');
-%         fprintf(fileID,'%6.2f %12.8f\r\n', contamination_hist);
-        fprintf(fileID,'%8f %12.8f\r\n', contamination_hist);
+        imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'C.jpg'], 'jpeg'); 
+        saveScatter = getframe(handles.axes7);
+        saveScatter = imresize(frame2im(saveScatter),4);
+        imwrite(saveScatter,['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'S.jpg'], 'jpeg');        
+        % save to file for each frame with [time, g/L, Total number of particle, histogram with 0.1mm bins]
+        fileID = fopen(['dataset_evaluation\', TodayDate, '\', 'contamination.txt'],'a');
+        fprintf(fileID,'%8f, %12.4f, %4d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d\r\n', contamination_hist);
         fclose(fileID);
-    end
-
-
+     end        
+ %%%%%%%%%%%%%%%%%%%   
     guidata(hObject,handles);
     set(handles.edit4, 'String', i);
     i = i + 1;
@@ -456,6 +463,7 @@ for  particle_idx = 1 : num_particles
     y_particle = centroid(2, particle_idx) * ratioScaleDown;
     scatter(x_particle, y_particle, 20, 'r*', 'Parent', handles.axes7);
 end
+
 %% plot - raw_image
 cla(handles.axes15);
 axes(handles.axes15);
