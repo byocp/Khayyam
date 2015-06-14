@@ -1,3 +1,27 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This script is made by Kepstrum Inc. Canada
+% All rights reserved
+% Author: Pedram Ataee
+% Date: ??
+% Vers: 1.0
+% 
+% Last edited by: Biye Chen
+% Last edited date: Jun. 14, 2015
+%
+% Description:
+% MATLAB based HMI for the vision sensor, temporary standalone solution
+% for calibration until a C# integrated solution is made.
+% 
+% Ongoing Issues:
+%   1. Use of global variables
+%       - Configure code structure to avoid using global variables, handles
+%       object should be used to communicate different variables within an
+%       HMI instance
+%   2. plotHist & plotImage
+%       - Used to see historical data on the images and histogram plots,
+%       currently unused and references to non-existing folder paths
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function varargout = hmi(varargin)
 % hmi MATLAB code for hmi.fig
 %      hmi, by itself, creates a new hmi or raises the existing
@@ -22,35 +46,38 @@ function varargout = hmi(varargin)
 
 % Edit the above text to modify the response to help hmi
 
-% Last Modified by GUIDE v2.5 30-May-2015 16:37:51
+% Last Modified by GUIDE v2.5 14-Jun-2015 16:09:08
 
 % Begin initialization code - DO NOT EDIT
-gui_Singleton = 1;
-gui_State = struct('gui_Name',       mfilename, ...
-    'gui_Singleton',  gui_Singleton, ...
-    'gui_OpeningFcn', @hmi_OpeningFcn, ...
-    'gui_OutputFcn',  @hmi_OutputFcn, ...
-    'gui_LayoutFcn',  [] , ...
-    'gui_Callback',   []);
 
-if nargin && ischar(varargin{1})
-    gui_State.gui_Callback = str2func(varargin{1});
-end
+    % MATLAB generated default code, DO NOT EDIT unless you know what
+    % you're doing
+    gui_Singleton = 1;
+    gui_State = struct('gui_Name',       mfilename, ...
+        'gui_Singleton',  gui_Singleton, ...
+        'gui_OpeningFcn', @hmi_OpeningFcn, ...
+        'gui_OutputFcn',  @hmi_OutputFcn, ...
+        'gui_LayoutFcn',  [] , ...
+        'gui_Callback',   []);
 
-if nargout
-    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
-else
-    gui_mainfcn(gui_State, varargin{:});
-    
+    if nargin && ischar(varargin{1})
+        gui_State.gui_Callback = str2func(varargin{1});
+    end
 
-
-    addpath('Lumenera Matlab Driver V2.0.1 NEW 64 Bit')
-end
+    if nargout
+        [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+    else
+        gui_mainfcn(gui_State, varargin{:});
+        
+        % Custom edit, adding Lumenera MATLAB functions as part of the path
+        addpath('Lumenera Matlab Driver V2.0.1 NEW 64 Bit')
+    end
 % End initialization code - DO NOT EDIT
+end
 
 
 % --- Executes just before hmi is made visible.
-function hmi_OpeningFcn(hObject, eventdata, handles, varargin)
+function hmi_OpeningFcn(hObject, ~, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -58,31 +85,30 @@ function hmi_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to hmi (see VARARGIN)
 
 % Choose default command line output for hmi
+    handles.output = hObject;
 
-cla(handles.axes1)
+    cla(handles.axeGramPerLitre)
 
-handles.output = hObject;
-bgcolor = [1 1 1];
-set(hObject, 'Color', bgcolor);
-set(findobj(hObject,'-property', 'BackgroundColor'), 'BackgroundColor', bgcolor);
+    % Sets all object background colors to white (Biye: Aesthetics...I
+    % guess)
+    bgcolor = [1 1 1];
+    set(hObject, 'Color', bgcolor);
+    set(findobj(hObject,'-property', 'BackgroundColor'), 'BackgroundColor', bgcolor);
 
-%**************************************************************************
-axes(handles.axes14);
-A=imread('logo.jpg');
-B=imrotate(A,90);
-%save('logo.mat','B')
-%load('logo.mat');
-imshow(B,[]);
+	% Set Kepstrum Logo
+    axes(handles.axeLogo);
+    A=imread('logo.jpg');
+    B=imrotate(A,90);
+    imshow(B,[]);
+    clear A B
 
-% Update handles structure
-guidata(hObject, handles);
-
-% UIWAIT makes hmi wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+    % Update handles structure
+    guidata(hObject, handles);
+end
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = hmi_OutputFcn(hObject, eventdata, handles)
+function varargout = hmi_OutputFcn(hObject, ~, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -92,104 +118,19 @@ function varargout = hmi_OutputFcn(hObject, eventdata, handles)
 
 guidata(hObject,handles);
 varargout{1} = handles.output;
-
-function edit1_Callback(hObject, eventdata, handles)
-% hObject    handle to edit1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit1 as text
-%        str2double(get(hObject,'String')) returns contents of edit1 as a double
-
-% --- Executes during object creation, after setting all properties.
-function edit1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-function edit2_Callback(hObject, eventdata, handles)
-% hObject    handle to edit2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit2 as text
-%        str2double(get(hObject,'String')) returns contents of edit2 as a double
-
-% --- Executes during object creation, after setting all properties.
-function edit2_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-function edit3_Callback(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit3 as text
-%        str2double(get(hObject,'String')) returns contents of edit3 as a double
-
-% --- Executes during object creation, after setting all properties.
-function edit3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-% --- Executes during object creation, after setting all properties.
-function axes10_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to axes10 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: place code in OpeningFcn to populate axes10
-
-% --- Executes during object creation, after setting all properties.
-function axes14_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to axes14 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: place code in OpeningFcn to populate axes14
-
-% --- Executes during object creation, after setting all properties.
-function slider1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
 % --- Executes on slider movement.
-function slider1_Callback(hObject, eventdata, handles)
-% hObject    handle to slider1 (see GCBO)
+function sldrGramPerLitre_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+% hObject    handle to sldrGramPerLitre (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+% Biye: Fix this during run to see what it's trying to do
 sliderTemp = 0;
 global Flag
-if exist('Flag', 'var')
-    while get(handles.pushbutton1,'Value') == 0 && sliderTemp == 0
-        slider1value = ceil(get(handles.slider1,'Value'));
+if isfield(Flag, 'Time')
+    while get(handles.btnStart,'Value') == 0 && sliderTemp == 0
+        slider1value = ceil(get(handles.sldrGramPerLitre,'Value'));
         if Flag.Time > 20
             slider1value = Flag.Time - 21 + slider1value;
         end
@@ -204,26 +145,28 @@ if exist('Flag', 'var')
         plotHist(hObject, eventdata, handles);
         sliderTemp = 1;
     end
-    set(handles.edit4,'String', slider1value);
+    set(handles.tbxTime,'String', slider1value);
 end
 guidata(hObject,handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+end
 
-function edit4_Callback(hObject, eventdata, handles)
-% hObject    handle to edit4 (see GCBO)
+function tbxTime_Callback(hObject, eventdata, handles)
+% hObject    handle to tbxTime (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-textValue = str2num( get(handles.edit4,'String') );
-set(handles.edit4,'Value',textValue)
+textValue = str2num( get(handles.tbxTime,'String') );
+set(handles.tbxTime,'Value',textValue)
 
-% Hints: get(hObject,'String') returns contents of edit4 as text
-%        str2double(get(hObject,'String')) returns contents of edit4 as a double
+% Hints: get(hObject,'String') returns contents of tbxTime as text
+%        str2double(get(hObject,'String')) returns contents of tbxTime as a double
+end
 
 
 % --- Executes during object creation, after setting all properties.
-function edit4_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit4 (see GCBO)
+function tbxTime_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to tbxTime (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -232,17 +175,19 @@ function edit4_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+end
 
 
-% --- Executes on button press in pushbutton4.
-function pushbutton4_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton4 (see GCBO)
+% --- Executes on button press in btnRenew.
+function btnRenew_Callback(hObject, eventdata, handles)
+% hObject    handle to btnRenew (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 close all
 clear all
 clc
 runtime
+end
 
 
 % --- Executes when uipanel7 is resized.
@@ -252,6 +197,7 @@ function uipanel7_ResizeFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 clear all
+end
 
 % --------------------------------------------------------------------
 function Back_Callback(hObject, eventdata, handles)
@@ -260,6 +206,7 @@ function Back_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 close all
 Kepstrum
+end
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu3_CreateFcn(hObject, eventdata, handles)
@@ -272,22 +219,23 @@ function popupmenu3_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+end
 
-% --- Executes on button press in pushbutton1.
-function pushbutton1_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton1 (see GCBO)
+% --- Executes on button press in btnStart.
+function btnStart_Callback(hObject, eventdata, handles)
+% hObject    handle to btnStart (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global Flag input_image_type particle_diameter_type parameter_over_time
 
 i = 1;
-if strcmp(get(handles.pushbutton1, 'String'), 'Pause')
-    set(handles.pushbutton1, 'String', 'Start');
+if strcmp(get(handles.btnStart, 'String'), 'Pause')
+    set(handles.btnStart, 'String', 'Start');
     Flag.Start = 0;
     runtime
-elseif strcmp(get(handles.pushbutton1, 'String'), 'Start')
-    cla(handles.axes1);
-    set(handles.pushbutton1,'String','Pause');
+elseif strcmp(get(handles.btnStart, 'String'), 'Start')
+    cla(handles.axeGramPerLitre);
+    set(handles.btnStart,'String','Pause');
     Flag.Time = 1;
     Flag.Start = 1;
     upperbound = Inf;
@@ -383,11 +331,12 @@ while Flag.Start == 1 && Flag.Time <= upperbound
 
 
     guidata(hObject,handles);
-    set(handles.edit4, 'String', i);
+    set(handles.tbxTime, 'String', i);
     i = i + 1;
 end
 
 guidata(hObject,handles);
+end
 
 function [C, x] = plotHist(hObject, eventdata, handles)
 global particle_diameter_type
@@ -398,8 +347,8 @@ if exist('calculation','var')
     major_axis = calculation.major_axis;
     minor_axis = calculation.minor_axis;
     equiv_diam = calculation.equiv_diam;
-    cla(handles.axes10);
-    axes(handles.axes10)
+    cla(handles.axeHistogram);
+    axes(handles.axeHistogram)
     if strcmp(particle_diameter_type, 'equiv_diam')
         [C,x] = hist(equiv_diam);
     elseif strcmp(particle_diameter_type, 'major_axis')
@@ -413,14 +362,14 @@ if exist('calculation','var')
         case 0
             Cnew = C;
     end
-    axes(handles.axes10)
+    axes(handles.axeHistogram)
     bar(x, Cnew);
     axis tight
     hold on
     plot(x, Cnew, 'r', 'Marker', 'o', 'Linewidth', 2)
     grid on
     xlabel('Particle Size [mm]', 'Fontsize', 10);
-    axes(handles.axes10)
+    axes(handles.axeHistogram)
     title('Particle Diameter Distribution / Frame','Fontsize',10);
     legend(particle_diameter_type);
     switch option_percentage
@@ -436,6 +385,7 @@ if exist('calculation','var')
     elseif strcmp(particle_diameter_type, 'minor_axis')
         legend('minor axis');
     end
+end
 end
 
 function plotImage(hObject, eventdata, handles)
@@ -460,6 +410,7 @@ end
 cla(handles.axes15);
 axes(handles.axes15);
 imshow(imresize(cropped_raw_image,ratioScaleDown),[], 'Parent', handles.axes15);
+end
 
 function plotVsTime(hObject, eventdata, handles)
 global Flag parameter_over_time
@@ -473,8 +424,8 @@ else
     timeMin = Flag.Time - 20 + 1;
     timeMax = Flag.Time;
 end
-if strcmp(get(handles.pushbutton1, 'String'), 'Pause')
-    axes(handles.axes1)
+if strcmp(get(handles.btnStart, 'String'), 'Pause')
+    axes(handles.axeGramPerLitre)
     plot(timeMin:timeMax, signal(timeMin:timeMax), 'k', 'linewidth', 1.5);
     xlim([max(Flag.Time, 20) - 19, max(Flag.Time, 20)]);
     if strcmp(parameter_over_time, 'contamination')
@@ -488,6 +439,7 @@ if strcmp(get(handles.pushbutton1, 'String'), 'Pause')
 end
 
 guidata(hObject,handles)
+end
 
 % --- Executes on button press in checkbox4.
 function checkbox4_Callback(hObject, eventdata, handles)
@@ -498,8 +450,8 @@ global Flag particle_diameter_type
 guidata(hObject,handles);
 val = get(handles.checkbox4,'value');
 
-if strcmp(get(handles.pushbutton1, 'String'), 'Start') && ~(get(handles.slider1,'Value') == 0)
-    slider1value = get(handles.slider1,'Value');
+if strcmp(get(handles.btnStart, 'String'), 'Start') && ~(get(handles.sldrGramPerLitre,'Value') == 0)
+    slider1value = get(handles.sldrGramPerLitre,'Value');
     if Flag.Time > 20
         slider1value = Flag.Time - 20 + ceil(slider1value);
     end
@@ -516,4 +468,27 @@ end
 handles.Percentage = val;
 guidata(hObject,handles);
 % Hint: get(hObject,'Value') returns toggle state of checkbox4
+end
 
+
+
+% --- Executes when user attempts to close figVisionHMI.
+function figVisionHMI_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figVisionHMI (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+delete(hObject);
+end
+
+
+
+function edit5_Callback(hObject, eventdata, handles)
+% hObject    handle to edit5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit5 as text
+%        str2double(get(hObject,'String')) returns contents of edit5 as a double
+end
