@@ -23,32 +23,32 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function varargout = hmi(varargin)
-% hmi MATLAB code for hmi.fig
-%      hmi, by itself, creates a new hmi or raises the existing
-%      singleton*.
-%
-%      H = hmi returns the handle to a new hmi or the handle to
-%      the existing singleton*.
-%
-%      hmi('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in hmi.M with the given input arguments.
-%
-%      hmi('Property','Value',...) creates a new hmi or raises the
-%      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before hmi_OpeningFcn gets called.  An
-%      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to hmi_OpeningFcn via varargin.
-%
-%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%      instance to run (singleton)".
-%
-% See also: GUIDE, GUIDATA, GUIHANDLES
+    % hmi MATLAB code for hmi.fig
+    %      hmi, by itself, creates a new hmi or raises the existing
+    %      singleton*.
+    %
+    %      H = hmi returns the handle to a new hmi or the handle to
+    %      the existing singleton*.
+    %
+    %      hmi('CALLBACK',hObject,eventData,handles,...) calls the local
+    %      function named CALLBACK in hmi.M with the given input arguments.
+    %
+    %      hmi('Property','Value',...) creates a new hmi or raises the
+    %      existing singleton*.  Starting from the left, property value pairs are
+    %      applied to the GUI before hmi_OpeningFcn gets called.  An
+    %      unrecognized property name or invalid value makes property application
+    %      stop.  All inputs are passed to hmi_OpeningFcn via varargin.
+    %
+    %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+    %      instance to run (singleton)".
+    %
+    % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help hmi
+    % Edit the above text to modify the response to help hmi
 
-% Last Modified by GUIDE v2.5 14-Jun-2015 16:09:08
+    % Last Modified by GUIDE v2.5 14-Jun-2015 16:09:08
 
-% Begin initialization code - DO NOT EDIT
+    % Begin initialization code - DO NOT EDIT
 
     % MATLAB generated default code, DO NOT EDIT unless you know what
     % you're doing
@@ -72,19 +72,19 @@ function varargout = hmi(varargin)
         % Custom edit, adding Lumenera MATLAB functions as part of the path
         addpath('Lumenera Matlab Driver V2.0.1 NEW 64 Bit')
     end
-% End initialization code - DO NOT EDIT
+    % End initialization code - DO NOT EDIT
 end
 
 
 % --- Executes just before hmi is made visible.
 function hmi_OpeningFcn(hObject, ~, handles, varargin)
-% This function has no output args, see OutputFcn.
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to hmi (see VARARGIN)
+    % This function has no output args, see OutputFcn.
+    % hObject    handle to figure
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    % varargin   command line arguments to hmi (see VARARGIN)
 
-% Choose default command line output for hmi
+    % Choose default command line output for hmi
     handles.output = hObject;
 
     cla(handles.axeGramPerLitre)
@@ -109,205 +109,177 @@ end
 
 % --- Outputs from this function are returned to the command line.
 function varargout = hmi_OutputFcn(hObject, ~, handles)
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+    % varargout  cell array for returning output args (see VARARGOUT);
+    % hObject    handle to figure
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
 
-% Get default command line output from handles structure
+    % Get default command line output from handles structure
 
-guidata(hObject,handles);
-varargout{1} = handles.output;
+    guidata(hObject,handles);
+    varargout{1} = handles.output;
 end
 
 % --- Executes on slider movement.
 function sldrGramPerLitre_Callback(hObject, eventdata, handles) %#ok<DEFNU>
-% hObject    handle to sldrGramPerLitre (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% Biye: Fix this during run to see what it's trying to do
-sliderTemp = 0;
-global Flag
-if isfield(Flag, 'Time')
-    while get(handles.btnStart,'Value') == 0 && sliderTemp == 0
-        slider1value = ceil(get(handles.sldrGramPerLitre,'Value'));
-        if Flag.Time > 20
-            slider1value = Flag.Time - 21 + slider1value;
+    % hObject    handle to sldrGramPerLitre (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    % Biye: Fix this during run to see what it's trying to do
+    sliderTemp = 0;
+    global Flag
+    if isfield(Flag, 'Time')
+        while get(handles.btnStart,'Value') == 0 && sliderTemp == 0
+            slider1value = ceil(get(handles.sldrGramPerLitre,'Value'));
+            if Flag.Time > 20
+                slider1value = Flag.Time - 21 + slider1value;
+            end
+            TodayDate = date;
+            filename = strcat(num2str(slider1value+1),'.mat');
+            loaded_data = load(['Images\', TodayDate, '\', filename]);
+            handles.raw_image   = loaded_data.raw_image;
+            handles.calculation = loaded_data.calculation;
+            %% plotImage
+            plotImage(hObject, eventdata, handles)
+            %% plotHist
+            plotHist(hObject, eventdata, handles);
+            sliderTemp = 1;
         end
-        TodayDate = date;
-        filename = strcat(num2str(slider1value+1),'.mat');
-        loaded_data = load(['Images\', TodayDate, '\', filename]);
-        handles.raw_image   = loaded_data.raw_image;
-        handles.calculation = loaded_data.calculation;
-        %% plotImage
-        plotImage(hObject, eventdata, handles)
-        %% plotHist
-        plotHist(hObject, eventdata, handles);
-        sliderTemp = 1;
+        set(handles.tbxTime,'String', slider1value);
     end
-    set(handles.tbxTime,'String', slider1value);
-end
-guidata(hObject,handles)
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+    guidata(hObject,handles)
+    % Hints: get(hObject,'Value') returns position of slider
+    %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 end
 
 % --- Executes on button press in btnRenew.
-function btnRenew_Callback(hObject, eventdata, handles)
-% hObject    handle to btnRenew (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-close all
-clear all
-clc
-runtime
-end
-
-
-% --- Executes when uipanel7 is resized.
-function uipanel7_ResizeFcn(hObject, eventdata, handles)
-% hObject    handle to uipanel7 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-clear all
-end
-
-% --------------------------------------------------------------------
-function Back_Callback(hObject, eventdata, handles)
-% hObject    handle to Back (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-close all
-Kepstrum
-end
-
-% --- Executes during object creation, after setting all properties.
-function popupmenu3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popupmenu3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
+function btnRenew_Callback(~, ~, ~) %#ok<DEFNU>
+    % hObject    handle to btnRenew (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    close all
+    clear all
+    clc
+    runtime     % Biye: Change this maybe?
 end
 
 % --- Executes on button press in btnStart.
 function btnStart_Callback(hObject, eventdata, handles)
-% hObject    handle to btnStart (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-global Flag input_image_type particle_diameter_type parameter_over_time
+    % hObject    handle to btnStart (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    global Flag input_image_type particle_diameter_type parameter_over_time
 
-i = 1;
-if strcmp(get(handles.btnStart, 'String'), 'Pause')
-    set(handles.btnStart, 'String', 'Start');
-    Flag.Start = 0;
-    runtime
-elseif strcmp(get(handles.btnStart, 'String'), 'Start')
-    cla(handles.axeGramPerLitre);
-    set(handles.btnStart,'String','Pause');
-    Flag.Time = 1;
-    Flag.Start = 1;
-    upperbound = Inf;
-    if strcmp(input_image_type, 'video')==1
-        sequence_of_images_video = import_video('F:\vision_sensor_pedram\particle_counter\videos\1.avi');
-        upperbound = length(sequence_of_images_video);
-    end
-end
-
-
-while Flag.Start == 1 && Flag.Time <= upperbound
-    Flag.Time = i;
-    if strcmp(input_image_type,'video')==1
-        %--video--
-        raw_image = sequence_of_images_video{Flag.Time};
-    elseif strcmp(input_image_type,'lucam_camera')==1
-        %--lucam_camera--
-%         try
-%             LuDispatcher(-1, 1); % connect
-%         catch
-%             LuDispatcher(-2, 1); %disconnect
-%             LuDispatcher(-1, 1);
-%         end
-        calculation               = main('', 'true');
-
-    elseif strcmp(input_image_type,'single_image')==1
-        %--single_image--
-        %[file_name, file_path] = uigetfile({'*.jpg;*.tif;*.png;*.gif', ...
-        %                                    'All Image Files'; '*.*', ...
-        %                                    'All Files' }, 'Kepstrum', '..\Samples');
-        file_path = '/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/particle_counter/samples/';
-        file_name = strcat(num2str(Flag.Time), '.jpg');
-        if file_name == 0
-            close all
-            clear all
-            runtime
-        else
-            Flag.Start = 1;
+    i = 1;  % Counter
+    if strcmp(get(handles.btnStart, 'String'), 'Pause')
+        set(handles.btnStart, 'String', 'Start');
+        Flag.Start = 0;
+        runtime
+    elseif strcmp(get(handles.btnStart, 'String'), 'Start')
+        cla(handles.axeGramPerLitre);
+        set(handles.btnStart,'String','Pause');
+        Flag.Time = 1;
+        Flag.Start = 1;
+        upperbound = Inf;
+        
+        % Analyze frame by frame of a video rather than from camera feed
+        if strcmp(input_image_type, 'video')==1
+            sequence_of_images_video = import_video('F:\vision_sensor_pedram\particle_counter\videos\1.avi');
+            upperbound = length(sequence_of_images_video);
         end
-        calculation = main([file_path, file_name], 'false');
-    end    
-    cropped_raw_image         = calculation.cropped_raw_image;
-    raw_image                 = calculation.raw_image;
-    handles.calculation       = calculation;
-    handles.cropped_raw_image = cropped_raw_image;
-    handles.raw_image         = raw_image;
-
-    %% plotImage
-    plotImage(hObject, eventdata, handles);
-    %% plotHist
-    plotHist(hObject, eventdata, handles);
-    %% plotVsTime
-    if strcmp(parameter_over_time, 'mean')
-        handles.plotVsTime(i) = mean(calculation.(particle_diameter_type));
-    elseif strcmp(parameter_over_time, 'contamination')
-        handles.plotVsTime(i) = calculation.contam_level_gram_per_liter;
-    end
-    plotVsTime(hObject, eventdata, handles)
-    %% save
-    filename = strcat(num2str(Flag.Time), '.mat');
-    TodayDate = date;
-    if ~exist(['dataset_evaluation\', TodayDate],'dir')
-        mkdir('dataset_evaluation\', TodayDate)
-    end
-    
-%    strSystemTime = floor(clock);
-    strSystemTime = now;
-%    strSystemTime = [int2str(strSystemTime(4)) ':' int2str(strSystemTime(5)) ':' int2str(strSystemTime(6))];
-%     contamination_hist(:,Flag.Time) = [Flag.Time; calculation.contam_level_gram_per_liter];
-    contamination_hist(:,Flag.Time) = [strSystemTime; calculation.contam_level_gram_per_liter];
-    
-    cmap = colormap('gray');
-    if isunix
-%         save(['dataset_evaluation/', TodayDate, '/', filename], 'calculation', 'raw_image', 'cropped_raw_image');
-        calculation_noimage = rmfield(calculation,{'raw_image','cropped_raw_image'});
-        save(['dataset_evaluation/', TodayDate, '/', filename], 'calculation_noimage');
-        imwrite(calculation.raw_image,         cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), '.jpg'], 'jpeg');
-        imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), 'C.jpg'], 'jpeg');
-        fileID = fopen(['dataset_evaluation/', TodayDate, '/', 'contamination.txt'],'w');
-        fprintf(fileID,'%8f %12.8f\r\n', contamination_hist);
-        fclose(fileID);
-    else
-%         save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation', 'raw_image', 'cropped_raw_image');
-        calculation_noimage = rmfield(calculation,{'raw_image','cropped_raw_image'});
-        save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation_noimage');
-        imwrite(calculation.raw_image,         cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), '.jpg'], 'jpeg');
-        imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'C.jpg'], 'jpeg');
-        fileID = fopen(['dataset_evaluation\', TodayDate, '\', 'contamination.txt'],'w');
-%         fprintf(fileID,'%6.2f %12.8f\r\n', contamination_hist);
-        fprintf(fileID,'%8f %12.8f\r\n', contamination_hist);
-        fclose(fileID);
     end
 
 
-    guidata(hObject,handles);
-    set(handles.tbxTime, 'Value', int2str(i));
-    i = i + 1;
-end
+    while Flag.Start == 1 && Flag.Time <= upperbound
+        Flag.Time = i;
+        
+        % If statement probably needs revamping...
+        if strcmp(input_image_type,'video')==1
+            %--video--
+            raw_image = sequence_of_images_video{Flag.Time};
+        elseif strcmp(input_image_type,'lucam_camera')==1
+            %--lucam_camera--
+    %         try
+    %             LuDispatcher(-1, 1); % connect
+    %         catch
+    %             LuDispatcher(-2, 1); %disconnect
+    %             LuDispatcher(-1, 1);
+    %         end
+            calculation               = main('', 'true');
+
+        elseif strcmp(input_image_type,'single_image')==1
+            %--single_image--
+            %[file_name, file_path] = uigetfile({'*.jpg;*.tif;*.png;*.gif', ...
+            %                                    'All Image Files'; '*.*', ...
+            %                                    'All Files' }, 'Kepstrum', '..\Samples');
+            file_path = '/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/particle_counter/samples/';
+            file_name = strcat(num2str(Flag.Time), '.jpg');
+            if file_name == 0
+                close all
+                clear all
+                runtime
+            else
+                Flag.Start = 1;
+            end
+            calculation = main([file_path, file_name], 'false');
+        end
+        cropped_raw_image         = calculation.cropped_raw_image;
+        raw_image                 = calculation.raw_image;
+        handles.calculation       = calculation;
+        handles.cropped_raw_image = cropped_raw_image;
+        handles.raw_image         = raw_image;
+
+        %% plotImage
+        plotImage(hObject, eventdata, handles);
+        %% plotHist
+        plotHist(hObject, eventdata, handles);
+        %% plotVsTime
+        if strcmp(parameter_over_time, 'mean')
+            handles.plotVsTime(i) = mean(calculation.(particle_diameter_type));
+        elseif strcmp(parameter_over_time, 'contamination')
+            handles.plotVsTime(i) = calculation.contam_level_gram_per_liter;
+        end
+        plotVsTime(hObject, eventdata, handles)
+        %% save
+        filename = strcat(num2str(Flag.Time), '.mat');
+        TodayDate = date;
+        if ~exist(['dataset_evaluation\', TodayDate],'dir')
+            mkdir('dataset_evaluation\', TodayDate)
+        end
+
+    %    strSystemTime = floor(clock);
+        strSystemTime = now;
+    %    strSystemTime = [int2str(strSystemTime(4)) ':' int2str(strSystemTime(5)) ':' int2str(strSystemTime(6))];
+    %     contamination_hist(:,Flag.Time) = [Flag.Time; calculation.contam_level_gram_per_liter];
+        contamination_hist(:,Flag.Time) = [strSystemTime; calculation.contam_level_gram_per_liter];
+
+        cmap = colormap('gray');
+        if isunix
+    %         save(['dataset_evaluation/', TodayDate, '/', filename], 'calculation', 'raw_image', 'cropped_raw_image');
+            calculation_noimage = rmfield(calculation,{'raw_image','cropped_raw_image'});
+            save(['dataset_evaluation/', TodayDate, '/', filename], 'calculation_noimage');
+            imwrite(calculation.raw_image,         cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), '.jpg'], 'jpeg');
+            imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), 'C.jpg'], 'jpeg');
+            fileID = fopen(['dataset_evaluation/', TodayDate, '/', 'contamination.txt'],'w');
+            fprintf(fileID,'%8f %12.8f\r\n', contamination_hist);
+            fclose(fileID);
+        else
+    %         save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation', 'raw_image', 'cropped_raw_image');
+            calculation_noimage = rmfield(calculation,{'raw_image','cropped_raw_image'});
+            save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation_noimage');
+            imwrite(calculation.raw_image,         cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), '.jpg'], 'jpeg');
+            imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'C.jpg'], 'jpeg');
+            fileID = fopen(['dataset_evaluation\', TodayDate, '\', 'contamination.txt'],'w');
+    %         fprintf(fileID,'%6.2f %12.8f\r\n', contamination_hist);
+            fprintf(fileID,'%8f %12.8f\r\n', contamination_hist);
+            fclose(fileID);
+        end
+
+
+        guidata(hObject,handles);
+        set(handles.tbxTime, 'Value', int2str(i));
+        i = i + 1;
+    end
 
 guidata(hObject,handles);
 end
@@ -447,22 +419,11 @@ end
 
 
 % --- Executes when user attempts to close figVisionHMI.
-function figVisionHMI_CloseRequestFcn(hObject, eventdata, handles)
+function figVisionHMI_CloseRequestFcn(hObject, ~, ~) %#ok<DEFNU>
 % hObject    handle to figVisionHMI (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: delete(hObject) closes the figure
 delete(hObject);
-end
-
-
-
-function edit5_Callback(hObject, eventdata, handles)
-% hObject    handle to edit5 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit5 as text
-%        str2double(get(hObject,'String')) returns contents of edit5 as a double
 end
