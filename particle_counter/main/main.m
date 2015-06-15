@@ -2,7 +2,10 @@ function output = main(file_full_path, plotVal)
 global  input_image_type particle_diameter_type parameter_over_time
 
 %% Load config
-config = load_config('/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/conf.txt');
+strConfigPath = getenv('USERPROFILE');
+strConfigPath = [strConfigPath '\Desktop\conf.txt'];
+config = load_config(strConfigPath);
+% config = load_config('/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/conf.txt');
 % config = load_config('C:\Users\Minghua\Desktop\conf.txt');
 
 %% Initialization
@@ -19,9 +22,9 @@ while (idx <= config.moving_average_length)
     %% Input
     % Test
     %raw_image =  importdata('/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/particle_counter/samples/10.jpg');
-    raw_image = importdata(file_full_path);
+%     raw_image = importdata(file_full_path);
     %Original
-    %raw_image = automated_frame_capture(config.lucam_snapshot_exposure, config.lucam_gain);
+    raw_image = automated_frame_capture(config.lucam_snapshot_exposure, config.lucam_gain);
     %% Camera Connection
     if raw_image == -1
        number     = -1;
