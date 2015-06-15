@@ -216,6 +216,9 @@ function btnStart_Callback(hObject, eventdata, handles)
         handles.calculation       = calculation;
         handles.cropped_raw_image = cropped_raw_image;
         handles.raw_image         = raw_image;
+        
+        set(handles.tbxIndex, 'Value', int2str(i));
+        guidata(hObject,handles);
 
         % plotImage
         plotImage(hObject, eventdata, handles);
@@ -235,34 +238,29 @@ function btnStart_Callback(hObject, eventdata, handles)
             mkdir('dataset_evaluation\', TodayDate)
         end
 
-        strSystemTime = now;
-        contamination_hist(:,Flag.Time) = [strSystemTime; calculation.contam_level_gram_per_liter];
+        histogram = []; 
+        for k = 1:20
+            histogram = [histogram sum(calculation.equiv_diam<k/10 & calculation.equiv_diam>(k-1)/10)]; %#ok<AGROW>
+        end
+        
+        strSystemTime = m2xdate(now);
+        contamination_hist = [strSystemTime, calculation.contam_level_gram_per_liter, calculation.contam_level_num_per_sample, histogram];
 
         cmap = colormap('gray');
-        if isunix
-    %         save(['dataset_evaluation/', TodayDate, '/', filename], 'calculation', 'raw_image', 'cropped_raw_image');
-            calculation_noimage = rmfield(calculation,{'raw_image','cropped_raw_image'});
-            save(['dataset_evaluation/', TodayDate, '/', filename], 'calculation_noimage');
-            imwrite(calculation.raw_image,         cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), '.jpg'], 'jpeg');
-            imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation/', TodayDate, '/', num2str(Flag.Time), 'C.jpg'], 'jpeg');
-            fileID = fopen(['dataset_evaluation/', TodayDate, '/', 'contamination.txt'],'w');
-            fprintf(fileID,'%8f %12.8f\r\n', contamination_hist);
-            fclose(fileID);
-        else
-    %         save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation', 'raw_image', 'cropped_raw_image');
-            calculation_noimage = rmfield(calculation,{'raw_image','cropped_raw_image'});
-            save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation_noimage');
-            imwrite(calculation.raw_image,         cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), '.jpg'], 'jpeg');
-            imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'C.jpg'], 'jpeg');
-            fileID = fopen(['dataset_evaluation\', TodayDate, '\', 'contamination.txt'],'w');
-    %         fprintf(fileID,'%6.2f %12.8f\r\n', contamination_hist);
-            fprintf(fileID,'%8f %12.8f\r\n', contamination_hist);
-            fclose(fileID);
-        end
 
-
-        guidata(hObject,handles);
-        set(handles.tbxIndex, 'Value', int2str(i));
+        calculation_noimage = rmfield(calculation,{'raw_image','cropped_raw_image'});
+        save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation_noimage');
+        % save raw image, cropped image, and image with scatters represnting the particle been counted
+        imwrite(calculation.raw_image,         cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), '.jpg'], 'jpeg');
+        imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'C.jpg'], 'jpeg'); 
+        saveScatter = getframe(handles.axes7);
+        saveScatter = imresize(frame2im(saveScatter),4);
+        imwrite(saveScatter,['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'S.jpg'], 'jpeg');        
+        % save to file for each frame with [time, g/L, Total number of particle, histogram with 0.1mm bins]
+        fileID = fopen(['dataset_evaluation\', TodayDate, '\', 'contamination.txt'],'a');
+        fprintf(fileID,'%8f, %12.4f, %4d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d\r\n', contamination_hist);
+        fclose(fileID);
+        
         i = i + 1;
     end
 
