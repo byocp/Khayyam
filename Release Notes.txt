@@ -1,3 +1,10 @@
+Version: 0.1
+Date: Jun. 15, 2015
+Notes:
+	- Fixed contamination_hist variable to not take up as much memory
+	- Outputs Error.txt and saves ERROR and Memory variables on error
+	- Saves processed image (particles labelled) as [index]S.jpg
+
 Version: 0.0
 Date: Jun. 12, 2015
 Notes:
