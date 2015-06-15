@@ -44,6 +44,7 @@ else
         gui_mainfcn(gui_State, varargin{:});
     catch ERROR
         logError = fopen('ERROR.txt','a');
+
         strErrorTime = datestr(now);
         fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
                           '%-' int2str(length(ERROR.message)) 's\r\n'...
@@ -51,7 +52,10 @@ else
         strErrorTime = regexprep(strErrorTime,':','');
         stcMemory = memory; %#ok<NASGU>
         save(['Error ' strErrorTime '.mat'],'ERROR','stcMemory');
+
         fclose(logError);
+        strError = regexprep(['Error ' datestr(now) '.mat'],':','');
+        save(strError,'ERROR');
     end
     addpath('Lumenera Matlab Driver V2.0.1 NEW 64 Bit')
 end
