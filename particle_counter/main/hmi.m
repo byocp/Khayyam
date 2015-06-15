@@ -146,6 +146,10 @@ function HMI_Initialize(hObject, handles)
     % Declares variables
     handles.Flags.Start = 0;
     handles.Flags.Index = 0;
+    
+    % Biye: Disable the other options, for now
+    set(handles.radInVideo,'Enable','off');
+    set(handles.radInFile,'Enable','off');
 
     % Update handles structure
     guidata(hObject, handles);
@@ -157,7 +161,7 @@ function btnStart_Callback(hObject, eventdata, handles)
     % hObject    handle to btnStart (see GCBO)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
-    global Flag input_image_type particle_diameter_type parameter_over_time
+    global Flag particle_diameter_type parameter_over_time
 
     i = 1;  % Counter
     
@@ -177,108 +181,61 @@ function btnStart_Callback(hObject, eventdata, handles)
             [strFileName, strPath] = uigetfile({'*.avi;*.mj2;*.mpg;*.wmv;*.asf;*.asx;*.mp4;*.m4v;*.mov',...
                                                 'All Video Files'},...
                                                 'Select Video File');
+            % Check for successful file load
             imgVideoFrame = import_video([strPath,strFileName]);
             intUpperbound = length(imgVideoFrame);
         case 'radInFile'
-            strPath = uigetdir();
-            intUpperbound = Inf;
+            [strFileName, strPath] = uigetfile({'*.jpg','JPEG Files'},...
+                                                'Select First and Last File',...
+                                                'MultiSelect','on');
+            % Check for successful file load
+            tmpBounds = rexexp(strFileName,'.jpg','');
+            tmpBounds{1} = str2num(tmpBounds{1}); %#ok<ST2NM>
+            tmpBounds{2} = str2num(tmpBounds{2}); %#ok<ST2NM>
+            tmpBounds = cell2mat(tmpBounds);
+            intLowerBound = min(tmpBounds);
+            intUpperbound = max(tmpBounds);
+            
+            clear tmpBounds
     end
 
     while handles.Flags.Start == 1 && handles.Flags.Index <= intUpperbound
         handles.Flags.Index = i;
-        
-        % If statement probably needs revamping...
-%         if strcmp(input_image_type,'video')==1
-%             %--video--
-%             raw_image = sequence_of_images_video{Flag.Time};
-%         elseif strcmp(input_image_type,'lucam_camera')==1
-%             %--lucam_camera--
-%     %         try
-%     %             LuDispatcher(-1, 1); % connect
-%     %         catch
-%     %             LuDispatcher(-2, 1); %disconnect
-%     %             LuDispatcher(-1, 1);
-%     %         end
-%             calculation               = main('', 'true');
-% 
-%         elseif strcmp(input_image_type,'single_image')==1
-%             %--single_image--
-%             %[file_name, file_path] = uigetfile({'*.jpg;*.tif;*.png;*.gif', ...
-%             %                                    'All Image Files'; '*.*', ...
-%             %                                    'All Files' }, 'Kepstrum', '..\Samples');
-%             file_path = '/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/particle_counter/samples/';
-%             file_name = strcat(num2str(Flag.Time), '.jpg');
-%             if file_name == 0
-%                 close all
-%                 clear all
-%                 runtime
-%             else
-%                 Flag.Start = 1;
-%             end
-%             calculation = main([file_path, file_name], 'false');
-%         end
 
-        if strcmp(input_image_type,'video')==1
-            %--video--
-            raw_image = imgVideoFrame{Flag.Time};
-        elseif strcmp(input_image_type,'lucam_camera')==1
-            %--lucam_camera--
-    %         try
-    %             LuDispatcher(-1, 1); % connect
-    %         catch
-    %             LuDispatcher(-2, 1); %disconnect
-    %             LuDispatcher(-1, 1);
-    %         end
-            calculation               = main('', 'true');
-
-        elseif strcmp(input_image_type,'single_image')==1
-            %--single_image--
-            %[file_name, file_path] = uigetfile({'*.jpg;*.tif;*.png;*.gif', ...
-            %                                    'All Image Files'; '*.*', ...
-            %                                    'All Files' }, 'Kepstrum', '..\Samples');
-            file_path = '/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/particle_counter/samples/';
-            file_name = strcat(num2str(Flag.Time), '.jpg');
-            if file_name == 0
-                close all
-                clear all
-                runtime
-            else
-                Flag.Start = 1;
-            end
-            calculation = main([file_path, file_name], 'false');
+        switch get(get(handles.pnlInputOption,'SelectedObject'),'Tag')
+            case 'radInCamera'
+                calculation = main('', 'true');
+            case 'radInVideo'
+                raw_image = imgVideoFrame{handles.Flags.Index};
+            case 'radInFile'
+                calculation = main([strPath, strFileName], 'false');
         end
-        
-        
-        
-        
+
         cropped_raw_image         = calculation.cropped_raw_image;
         raw_image                 = calculation.raw_image;
         handles.calculation       = calculation;
         handles.cropped_raw_image = cropped_raw_image;
         handles.raw_image         = raw_image;
 
-        %% plotImage
+        % plotImage
         plotImage(hObject, eventdata, handles);
-        %% plotHist
+        % plotHist
         plotHist(hObject, eventdata, handles);
-        %% plotVsTime
+        % plotVsTime
         if strcmp(parameter_over_time, 'mean')
             handles.plotVsTime(i) = mean(calculation.(particle_diameter_type));
         elseif strcmp(parameter_over_time, 'contamination')
             handles.plotVsTime(i) = calculation.contam_level_gram_per_liter;
         end
         plotVsTime(hObject, eventdata, handles)
-        %% save
+        % save
         filename = strcat(num2str(Flag.Time), '.mat');
         TodayDate = date;
         if ~exist(['dataset_evaluation\', TodayDate],'dir')
             mkdir('dataset_evaluation\', TodayDate)
         end
 
-    %    strSystemTime = floor(clock);
         strSystemTime = now;
-    %    strSystemTime = [int2str(strSystemTime(4)) ':' int2str(strSystemTime(5)) ':' int2str(strSystemTime(6))];
-    %     contamination_hist(:,Flag.Time) = [Flag.Time; calculation.contam_level_gram_per_liter];
         contamination_hist(:,Flag.Time) = [strSystemTime; calculation.contam_level_gram_per_liter];
 
         cmap = colormap('gray');
@@ -309,7 +266,7 @@ function btnStart_Callback(hObject, eventdata, handles)
         i = i + 1;
     end
 
-guidata(hObject,handles);
+    guidata(hObject,handles);
 end
 
 % --- Executes on button press in checkbox4.
