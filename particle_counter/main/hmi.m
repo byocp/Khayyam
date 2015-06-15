@@ -22,6 +22,7 @@
 %       currently unused and references to non-existing folder paths
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% MATLAB Generated
 function varargout = hmi(varargin)
     % hmi MATLAB code for hmi.fig
     %      hmi, by itself, creates a new hmi or raises the existing
@@ -46,7 +47,7 @@ function varargout = hmi(varargin)
 
     % Edit the above text to modify the response to help hmi
 
-    % Last Modified by GUIDE v2.5 14-Jun-2015 16:09:08
+    % Last Modified by GUIDE v2.5 14-Jun-2015 19:59:36
 
     % Begin initialization code - DO NOT EDIT
 
@@ -75,7 +76,6 @@ function varargout = hmi(varargin)
     % End initialization code - DO NOT EDIT
 end
 
-
 % --- Executes just before hmi is made visible.
 function hmi_OpeningFcn(hObject, ~, handles, varargin)
     % This function has no output args, see OutputFcn.
@@ -86,26 +86,12 @@ function hmi_OpeningFcn(hObject, ~, handles, varargin)
 
     % Choose default command line output for hmi
     handles.output = hObject;
-
-    cla(handles.axeGramPerLitre)
-
-    % Sets all object background colors to white (Biye: Aesthetics...I
-    % guess)
-    bgcolor = [1 1 1];
-    set(hObject, 'Color', bgcolor);
-    set(findobj(hObject,'-property', 'BackgroundColor'), 'BackgroundColor', bgcolor);
-
-	% Set Kepstrum Logo
-    axes(handles.axeLogo);
-    A=imread('logo.jpg');
-    B=imrotate(A,90);
-    imshow(B,[]);
-    clear A B
+    
+    HMI_Initialize(hObject, handles);
 
     % Update handles structure
     guidata(hObject, handles);
 end
-
 
 % --- Outputs from this function are returned to the command line.
 function varargout = hmi_OutputFcn(hObject, ~, handles)
@@ -120,38 +106,6 @@ function varargout = hmi_OutputFcn(hObject, ~, handles)
     varargout{1} = handles.output;
 end
 
-% --- Executes on slider movement.
-function sldrGramPerLitre_Callback(hObject, eventdata, handles) %#ok<DEFNU>
-    % hObject    handle to sldrGramPerLitre (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-    % Biye: Fix this during run to see what it's trying to do
-    sliderTemp = 0;
-    global Flag
-    if isfield(Flag, 'Time')
-        while get(handles.btnStart,'Value') == 0 && sliderTemp == 0
-            slider1value = ceil(get(handles.sldrGramPerLitre,'Value'));
-            if Flag.Time > 20
-                slider1value = Flag.Time - 21 + slider1value;
-            end
-            TodayDate = date;
-            filename = strcat(num2str(slider1value+1),'.mat');
-            loaded_data = load(['Images\', TodayDate, '\', filename]);
-            handles.raw_image   = loaded_data.raw_image;
-            handles.calculation = loaded_data.calculation;
-            %% plotImage
-            plotImage(hObject, eventdata, handles)
-            %% plotHist
-            plotHist(hObject, eventdata, handles);
-            sliderTemp = 1;
-        end
-        set(handles.tbxTime,'String', slider1value);
-    end
-    guidata(hObject,handles)
-    % Hints: get(hObject,'Value') returns position of slider
-    %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-end
-
 % --- Executes on button press in btnRenew.
 function btnRenew_Callback(~, ~, ~) %#ok<DEFNU>
     % hObject    handle to btnRenew (see GCBO)
@@ -163,6 +117,41 @@ function btnRenew_Callback(~, ~, ~) %#ok<DEFNU>
     runtime     % Biye: Change this maybe?
 end
 
+% --- Executes when user attempts to close figVisionHMI.
+function figVisionHMI_CloseRequestFcn(hObject, ~, ~) %#ok<DEFNU>
+% hObject    handle to figVisionHMI (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+delete(hObject);
+end
+
+
+%% Custom Functions
+function HMI_Initialize(hObject, handles)
+    % Sets all object background colors to white (Biye: Aesthetics...I
+    % guess)
+    bgcolor = [1 1 1];
+    set(hObject, 'Color', bgcolor);
+    set(findobj(hObject,'-property', 'BackgroundColor'), 'BackgroundColor', bgcolor);
+
+	% Set Kepstrum Logo
+    axes(handles.axeLogo);
+    A=imread('logo.jpg');
+    B=imrotate(A,90);
+    imshow(B,[]);
+    clear A B
+    
+    % Declares variables
+    handles.Flags.Start = 0;
+    handles.Flags.Index = 0;
+
+    % Update handles structure
+    guidata(hObject, handles);
+end
+
+%% Functions that needs work
 % --- Executes on button press in btnStart.
 function btnStart_Callback(hObject, eventdata, handles)
     % hObject    handle to btnStart (see GCBO)
@@ -171,32 +160,67 @@ function btnStart_Callback(hObject, eventdata, handles)
     global Flag input_image_type particle_diameter_type parameter_over_time
 
     i = 1;  % Counter
-    if strcmp(get(handles.btnStart, 'String'), 'Pause')
-        set(handles.btnStart, 'String', 'Start');
-        Flag.Start = 0;
-        runtime
-    elseif strcmp(get(handles.btnStart, 'String'), 'Start')
-        cla(handles.axeGramPerLitre);
-        set(handles.btnStart,'String','Pause');
-        Flag.Time = 1;
-        Flag.Start = 1;
-        upperbound = Inf;
-        
-        % Analyze frame by frame of a video rather than from camera feed
-        if strcmp(input_image_type, 'video')==1
-            sequence_of_images_video = import_video('F:\vision_sensor_pedram\particle_counter\videos\1.avi');
-            upperbound = length(sequence_of_images_video);
-        end
+    
+    if get(hObject,'Value')     % Toggle True
+        set(hObject,'String','Pause');
+        handles.Flags.Start = 1;
+        handles.Flags.Index = 1;
+    else                        % Toggle False
+        set(hObject,'String','Start');
+        handles.Flags.Start = 0;
+    end
+    
+    switch get(get(handles.pnlInputOption,'SelectedObject'),'Tag')
+        case 'radInCamera'
+            intUpperbound = Inf;
+        case 'radInVideo'
+            [strFileName, strPath] = uigetfile({'*.avi;*.mj2;*.mpg;*.wmv;*.asf;*.asx;*.mp4;*.m4v;*.mov',...
+                                                'All Video Files'},...
+                                                'Select Video File');
+            imgVideoFrame = import_video([strPath,strFileName]);
+            intUpperbound = length(imgVideoFrame);
+        case 'radInFile'
+            strPath = uigetdir();
+            intUpperbound = Inf;
     end
 
-
-    while Flag.Start == 1 && Flag.Time <= upperbound
-        Flag.Time = i;
+    while handles.Flags.Start == 1 && handles.Flags.Index <= intUpperbound
+        handles.Flags.Index = i;
         
         % If statement probably needs revamping...
+%         if strcmp(input_image_type,'video')==1
+%             %--video--
+%             raw_image = sequence_of_images_video{Flag.Time};
+%         elseif strcmp(input_image_type,'lucam_camera')==1
+%             %--lucam_camera--
+%     %         try
+%     %             LuDispatcher(-1, 1); % connect
+%     %         catch
+%     %             LuDispatcher(-2, 1); %disconnect
+%     %             LuDispatcher(-1, 1);
+%     %         end
+%             calculation               = main('', 'true');
+% 
+%         elseif strcmp(input_image_type,'single_image')==1
+%             %--single_image--
+%             %[file_name, file_path] = uigetfile({'*.jpg;*.tif;*.png;*.gif', ...
+%             %                                    'All Image Files'; '*.*', ...
+%             %                                    'All Files' }, 'Kepstrum', '..\Samples');
+%             file_path = '/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/particle_counter/samples/';
+%             file_name = strcat(num2str(Flag.Time), '.jpg');
+%             if file_name == 0
+%                 close all
+%                 clear all
+%                 runtime
+%             else
+%                 Flag.Start = 1;
+%             end
+%             calculation = main([file_path, file_name], 'false');
+%         end
+
         if strcmp(input_image_type,'video')==1
             %--video--
-            raw_image = sequence_of_images_video{Flag.Time};
+            raw_image = imgVideoFrame{Flag.Time};
         elseif strcmp(input_image_type,'lucam_camera')==1
             %--lucam_camera--
     %         try
@@ -223,6 +247,10 @@ function btnStart_Callback(hObject, eventdata, handles)
             end
             calculation = main([file_path, file_name], 'false');
         end
+        
+        
+        
+        
         cropped_raw_image         = calculation.cropped_raw_image;
         raw_image                 = calculation.raw_image;
         handles.calculation       = calculation;
@@ -277,11 +305,72 @@ function btnStart_Callback(hObject, eventdata, handles)
 
 
         guidata(hObject,handles);
-        set(handles.tbxTime, 'Value', int2str(i));
+        set(handles.tbxIndex, 'Value', int2str(i));
         i = i + 1;
     end
 
 guidata(hObject,handles);
+end
+
+% --- Executes on button press in checkbox4.
+function checkbox4_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global Flag particle_diameter_type
+guidata(hObject,handles);
+val = get(handles.checkbox4,'value');
+
+if strcmp(get(handles.btnStart, 'String'), 'Start') && ~(get(handles.sldrGramPerLitre,'Value') == 0)
+    slider1value = get(handles.sldrGramPerLitre,'Value');
+    if Flag.Time > 20
+        slider1value = Flag.Time - 20 + ceil(slider1value);
+    end
+    TodayDate = date;
+    filename = strcat(num2str(ceil(slider1value)), '.mat');
+    x = load(['Images\', TodayDate, '\', filename]);
+    handles.calculation = x.calculation;
+end
+
+if isfield(handles,'calculation')
+    plotHist(hObject, eventdata, handles);
+end
+
+handles.Percentage = val;
+guidata(hObject,handles);
+% Hint: get(hObject,'Value') returns toggle state of checkbox4
+end
+
+% --- Executes on slider movement.
+function sldrGramPerLitre_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+    % hObject    handle to sldrGramPerLitre (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    % Biye: Fix this during run to see what it's trying to do
+    sliderTemp = 0;
+    global Flag
+    if isfield(Flag, 'Time')
+        while get(handles.btnStart,'Value') == 0 && sliderTemp == 0
+            slider1value = ceil(get(handles.sldrGramPerLitre,'Value'));
+            if Flag.Time > 20
+                slider1value = Flag.Time - 21 + slider1value;
+            end
+            TodayDate = date;
+            filename = strcat(num2str(slider1value+1),'.mat');
+            loaded_data = load(['Images\', TodayDate, '\', filename]);
+            handles.raw_image   = loaded_data.raw_image;
+            handles.calculation = loaded_data.calculation;
+            %% plotImage
+            plotImage(hObject, eventdata, handles)
+            %% plotHist
+            plotHist(hObject, eventdata, handles);
+            sliderTemp = 1;
+        end
+        set(handles.tbxIndex,'String', slider1value);
+    end
+    guidata(hObject,handles)
+    % Hints: get(hObject,'Value') returns position of slider
+    %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 end
 
 function [C, x] = plotHist(hObject, eventdata, handles)
@@ -385,45 +474,4 @@ if strcmp(get(handles.btnStart, 'String'), 'Pause')
 end
 
 guidata(hObject,handles)
-end
-
-% --- Executes on button press in checkbox4.
-function checkbox4_Callback(hObject, eventdata, handles)
-% hObject    handle to checkbox4 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-global Flag particle_diameter_type
-guidata(hObject,handles);
-val = get(handles.checkbox4,'value');
-
-if strcmp(get(handles.btnStart, 'String'), 'Start') && ~(get(handles.sldrGramPerLitre,'Value') == 0)
-    slider1value = get(handles.sldrGramPerLitre,'Value');
-    if Flag.Time > 20
-        slider1value = Flag.Time - 20 + ceil(slider1value);
-    end
-    TodayDate = date;
-    filename = strcat(num2str(ceil(slider1value)), '.mat');
-    x = load(['Images\', TodayDate, '\', filename]);
-    handles.calculation = x.calculation;
-end
-
-if isfield(handles,'calculation')
-    plotHist(hObject, eventdata, handles);
-end
-
-handles.Percentage = val;
-guidata(hObject,handles);
-% Hint: get(hObject,'Value') returns toggle state of checkbox4
-end
-
-
-
-% --- Executes when user attempts to close figVisionHMI.
-function figVisionHMI_CloseRequestFcn(hObject, ~, ~) %#ok<DEFNU>
-% hObject    handle to figVisionHMI (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: delete(hObject) closes the figure
-delete(hObject);
 end
