@@ -44,7 +44,9 @@ else
         gui_mainfcn(gui_State, varargin{:});
     catch ERROR
         logError = fopen('ERROR.txt','a');
-        fprintf(logError,['%-' int2str(length(ERROR.message)) 's\r\n'],ERROR.message);
+        fprintf(logError,['%-' int2str(length(datestr(now))) 's\r\n'...
+                          '%-' int2str(length(ERROR.message)) 's\r\n\r\n'],...
+                          datestr(now),ERROR.message);
         fclose(logError);
     end
     addpath('Lumenera Matlab Driver V2.0.1 NEW 64 Bit')
