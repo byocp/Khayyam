@@ -48,6 +48,8 @@ else
                           '%-' int2str(length(ERROR.message)) 's\r\n\r\n'],...
                           datestr(now),ERROR.message);
         fclose(logError);
+        strError = regexprep(['Error ' datestr(now) '.mat'],':','');
+        save(strError,'ERROR');
     end
     addpath('Lumenera Matlab Driver V2.0.1 NEW 64 Bit')
 end
