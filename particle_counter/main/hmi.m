@@ -6,7 +6,7 @@
 % Vers: 1.0
 % 
 % Last edited by: Biye Chen
-% Last edited date: Jun. 14, 2015
+% Last edited date: Jun. 15, 2015
 %
 % Description:
 % MATLAB based HMI for the vision sensor, temporary standalone solution
@@ -68,6 +68,7 @@ function varargout = hmi(varargin)
     if nargout
         [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
     else
+        % Biye: Add error check here or runtime
         gui_mainfcn(gui_State, varargin{:});
         
         % Custom edit, adding Lumenera MATLAB functions as part of the path
@@ -181,18 +182,16 @@ function btnStart_Callback(hObject, eventdata, handles)
             [strFileName, strPath] = uigetfile({'*.avi;*.mj2;*.mpg;*.wmv;*.asf;*.asx;*.mp4;*.m4v;*.mov',...
                                                 'All Video Files'},...
                                                 'Select Video File');
-            % Check for successful file load
+            % Biye: Check for successful file load
             imgVideoFrame = import_video([strPath,strFileName]);
             intUpperbound = length(imgVideoFrame);
         case 'radInFile'
             [strFileName, strPath] = uigetfile({'*.jpg','JPEG Files'},...
                                                 'Select First and Last File',...
                                                 'MultiSelect','on');
-            % Check for successful file load
+            % Biye: Check for successful file load
             tmpBounds = rexexp(strFileName,'.jpg','');
-            tmpBounds{1} = str2num(tmpBounds{1}); %#ok<ST2NM>
-            tmpBounds{2} = str2num(tmpBounds{2}); %#ok<ST2NM>
-            tmpBounds = cell2mat(tmpBounds);
+            tmpBounds = cellfun(@str2num,tmpBounds);
             intLowerBound = min(tmpBounds);
             intUpperbound = max(tmpBounds);
             
@@ -206,11 +205,15 @@ function btnStart_Callback(hObject, eventdata, handles)
             case 'radInCamera'
                 calculation = main('', 'true');
             case 'radInVideo'
-                raw_image = imgVideoFrame{handles.Flags.Index};
+                % Biye: Come back to it later
+                calculation = main('Video','false',imgVideoFrame{handles.Flags.Index});
             case 'radInFile'
+                % Biye: Come back to it later
                 calculation = main([strPath, strFileName], 'false');
         end
-
+        
+        % Check if calculation is empty
+        
         cropped_raw_image         = calculation.cropped_raw_image;
         raw_image                 = calculation.raw_image;
         handles.calculation       = calculation;
