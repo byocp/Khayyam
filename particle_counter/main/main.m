@@ -2,8 +2,8 @@ function output = main(file_full_path, plotVal)
 global  input_image_type particle_diameter_type parameter_over_time
 
 %% Load config
-config = load_config('/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/conf.txt');
-% config = load_config('C:\Users\Minghua\Desktop\conf.txt');
+% config = load_config('/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/conf.txt');
+config = load_config('C:\Users\Minghua\Desktop\conf.txt');
 
 %% Initialization
 number     = zeros(1, config.moving_average_length);
@@ -19,9 +19,9 @@ while (idx <= config.moving_average_length)
     %% Input
     % Test
     %raw_image =  importdata('/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/particle_counter/samples/10.jpg');
-    raw_image = importdata(file_full_path);
+   % raw_image = importdata(file_full_path);
     %Original
-    %raw_image = automated_frame_capture(config.lucam_snapshot_exposure, config.lucam_gain);
+    raw_image = automated_frame_capture(config.lucam_snapshot_exposure, config.lucam_gain);
     %% Camera Connection
     if raw_image == -1
        number     = -1;
@@ -129,7 +129,8 @@ for  particle_id = 0 : size(centroid, 2) - 1
 end
 print (f, '-r80', '-djpeg', strcat(file_name,'_proc.jpeg'));
 saveas(f, strcat(file_name, '_proc.jpeg'));
-    
+
+close(f);
     
 clearvars -except input_image_type particle_diameter_type parameter_over_time
 end
