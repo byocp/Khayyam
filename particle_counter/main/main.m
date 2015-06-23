@@ -40,7 +40,7 @@ function output = main(strFullPath, plotVal, imgVidFrame)
         end
         
         % Check if raw_image is an image (uint8 might not work?)
-        if isa(raw_image,'uint8')
+        if ~isa(raw_image,'uint8')
             % Biye: Is this necessary?
             number     = -1;
             area       = 0;

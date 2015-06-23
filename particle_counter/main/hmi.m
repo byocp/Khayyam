@@ -150,7 +150,7 @@ function HMI_Initialize(hObject, handles)
     
     % Biye: Disable the other options, for now
     set(handles.radInVideo,'Enable','off');
-%     set(handles.radInFile,'Enable','off');
+    set(handles.radInFile,'Enable','off');
 
     % Update handles structure
     guidata(hObject, handles);
@@ -170,33 +170,33 @@ function btnStart_Callback(hObject, eventdata, handles)
         set(hObject,'String','Pause');
         handles.Flags.Start = 1;
         handles.Flags.Index = 1;
+    
+        switch get(get(handles.pnlInputOption,'SelectedObject'),'Tag')
+            case 'radInCamera'
+                intUpperbound = Inf;
+            case 'radInVideo'
+                [strFileName, strPath] = uigetfile({'*.avi;*.mj2;*.mpg;*.wmv;*.asf;*.asx;*.mp4;*.m4v;*.mov',...
+                                                    'All Video Files'},...
+                                                    'Select Video File');
+                % Biye: Check for successful file load
+                imgVideoFrame = import_video([strPath,strFileName]);
+                intUpperbound = length(imgVideoFrame);
+            case 'radInFile'
+                [strFileName, strPath] = uigetfile({'*.jpg','JPEG Files'},...
+                                                    'Select First and Last File',...
+                                                    'MultiSelect','on');
+                % Biye: Check for successful file load
+    %             tmpBounds = rexexp(strFileName,'.jpg','');
+    %             tmpBounds = cellfun(@str2num,tmpBounds);
+    %             intLowerBound = min(tmpBounds);
+    %             intUpperbound = max(tmpBounds);
+                intUpperbound = inf;
+
+                clear tmpBounds
+        end
     else                        % Toggle False
         set(hObject,'String','Start');
         handles.Flags.Start = 0;
-    end
-    
-    switch get(get(handles.pnlInputOption,'SelectedObject'),'Tag')
-        case 'radInCamera'
-            intUpperbound = Inf;
-        case 'radInVideo'
-            [strFileName, strPath] = uigetfile({'*.avi;*.mj2;*.mpg;*.wmv;*.asf;*.asx;*.mp4;*.m4v;*.mov',...
-                                                'All Video Files'},...
-                                                'Select Video File');
-            % Biye: Check for successful file load
-            imgVideoFrame = import_video([strPath,strFileName]);
-            intUpperbound = length(imgVideoFrame);
-        case 'radInFile'
-            [strFileName, strPath] = uigetfile({'*.jpg','JPEG Files'},...
-                                                'Select First and Last File',...
-                                                'MultiSelect','on');
-            % Biye: Check for successful file load
-%             tmpBounds = rexexp(strFileName,'.jpg','');
-%             tmpBounds = cellfun(@str2num,tmpBounds);
-%             intLowerBound = min(tmpBounds);
-%             intUpperbound = max(tmpBounds);
-            intUpperbound = inf;
-            
-            clear tmpBounds
     end
 
     while handles.Flags.Start == 1 && handles.Flags.Index <= intUpperbound
@@ -221,7 +221,7 @@ function btnStart_Callback(hObject, eventdata, handles)
         handles.cropped_raw_image = cropped_raw_image;
         handles.raw_image         = raw_image;
         
-        set(handles.tbxIndex, 'Value', int2str(i));
+        set(handles.tbxIndex, 'String', int2str(i));
         guidata(hObject,handles);
 
         % plotImage
@@ -229,14 +229,14 @@ function btnStart_Callback(hObject, eventdata, handles)
         % plotHist
         plotHist(hObject, eventdata, handles);
         % plotVsTime
-        if strcmp(parameter_over_time, 'mean')
-            handles.plotVsTime(i) = mean(calculation.(particle_diameter_type));
-        elseif strcmp(parameter_over_time, 'contamination')
+%         if strcmp(parameter_over_time, 'mean')
+%             handles.plotVsTime(i) = mean(calculation.(particle_diameter_type));
+%         elseif strcmp(parameter_over_time, 'contamination')
             handles.plotVsTime(i) = calculation.contam_level_gram_per_liter;
-        end
+%         end
         plotVsTime(hObject, eventdata, handles)
         % save
-        filename = strcat(num2str(Flag.Time), '.mat');
+        filename = strcat(num2str(handles.Flags.Index), '.mat');
         TodayDate = date;
         if ~exist(['dataset_evaluation\', TodayDate],'dir')
             mkdir('dataset_evaluation\', TodayDate)
@@ -255,19 +255,20 @@ function btnStart_Callback(hObject, eventdata, handles)
         calculation_noimage = rmfield(calculation,{'raw_image','cropped_raw_image'});
         save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation_noimage');
         % save raw image, cropped image, and image with scatters represnting the particle been counted
-        imwrite(calculation.raw_image,         cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), '.jpg'], 'jpeg');
-        imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'C.jpg'], 'jpeg'); 
+        imwrite(calculation.raw_image,         cmap, ['dataset_evaluation\', TodayDate, '\', num2str(handles.Flags.Index), '.jpg'], 'jpeg');
+        imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation\', TodayDate, '\', num2str(handles.Flags.Index), 'C.jpg'], 'jpeg'); 
         saveScatter = getframe(handles.axes7);
         saveScatter = imresize(frame2im(saveScatter),4);
-        imwrite(saveScatter,['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'S.jpg'], 'jpeg');        
+        imwrite(saveScatter,['dataset_evaluation\', TodayDate, '\', num2str(handles.Flags.Index), 'S.jpg'], 'jpeg');        
         % save to file for each frame with [time, g/L, Total number of particle, histogram with 0.1mm bins]
         fileID = fopen(['dataset_evaluation\', TodayDate, '\', 'contamination.txt'],'a');
         fprintf(fileID,'%8f, %12.4f, %4d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d\r\n', contamination_hist);
         fclose(fileID);
         
         i = i + 1;
+        
+        handles = guidata(hObject);
     end
-
     guidata(hObject,handles);
 end
 
@@ -343,13 +344,13 @@ if exist('calculation','var')
     equiv_diam = calculation.equiv_diam;
     cla(handles.axeHistogram);
     axes(handles.axeHistogram)
-    if strcmp(particle_diameter_type, 'equiv_diam')
+%     if strcmp(particle_diameter_type, 'equiv_diam')
         [C,x] = hist(equiv_diam);
-    elseif strcmp(particle_diameter_type, 'major_axis')
-        [C, x] = hist(major_axis);
-    elseif strcmp(particle_diameter_type, 'minor_axis')
-        [C,x] = hist(minor_axis);
-    end
+%     elseif strcmp(particle_diameter_type, 'major_axis')
+%         [C, x] = hist(major_axis);
+%     elseif strcmp(particle_diameter_type, 'minor_axis')
+%         [C,x] = hist(minor_axis);
+%     end
     switch option_percentage
         case 1
             Cnew = C ./ sum(C) * 100;
@@ -411,22 +412,22 @@ global Flag parameter_over_time
 guidata(hObject,handles)
 box on
 signal = handles.plotVsTime;
-if Flag.Time <= 20
+if handles.Flags.Index <= 20
     timeMin = 1;
-    timeMax = Flag.Time;
+    timeMax = handles.Flags.Index;
 else
-    timeMin = Flag.Time - 20 + 1;
-    timeMax = Flag.Time;
+    timeMin = handles.Flags.Index - 20 + 1;
+    timeMax = handles.Flags.Index;
 end
 if strcmp(get(handles.btnStart, 'String'), 'Pause')
     axes(handles.axeGramPerLitre)
     plot(timeMin:timeMax, signal(timeMin:timeMax), 'k', 'linewidth', 1.5);
-    xlim([max(Flag.Time, 20) - 19, max(Flag.Time, 20)]);
-    if strcmp(parameter_over_time, 'contamination')
+    xlim([max(handles.Flags.Index, 20) - 19, max(handles.Flags.Index, 20)]);
+%     if strcmp(parameter_over_time, 'contamination')
         ylabel('Concentration g/L');
-    else
-        ylabel(parameter_over_time);
-    end
+%     else
+%         ylabel(parameter_over_time);
+%     end
     xlabel('Frame [#]');
     hold on
     grid on

@@ -55,7 +55,7 @@ image_ready = image_removed_at_borders;
 
 %% Plot
 if config.investigation_process
-    fig_stages_of_process = figure;
+    fig_stages_of_process = figure(1);
     set(fig_stages_of_process,'name','Procedure','numbertitle','off')
     
     subplot(3, 3, 1)
