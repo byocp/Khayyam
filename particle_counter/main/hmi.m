@@ -150,7 +150,7 @@ function HMI_Initialize(hObject, handles)
     
     % Biye: Disable the other options, for now
     set(handles.radInVideo,'Enable','off');
-    set(handles.radInFile,'Enable','off');
+%     set(handles.radInFile,'Enable','off');
 
     % Update handles structure
     guidata(hObject, handles);
@@ -190,10 +190,11 @@ function btnStart_Callback(hObject, eventdata, handles)
                                                 'Select First and Last File',...
                                                 'MultiSelect','on');
             % Biye: Check for successful file load
-            tmpBounds = rexexp(strFileName,'.jpg','');
-            tmpBounds = cellfun(@str2num,tmpBounds);
-            intLowerBound = min(tmpBounds);
-            intUpperbound = max(tmpBounds);
+%             tmpBounds = rexexp(strFileName,'.jpg','');
+%             tmpBounds = cellfun(@str2num,tmpBounds);
+%             intLowerBound = min(tmpBounds);
+%             intUpperbound = max(tmpBounds);
+            intUpperbound = inf;
             
             clear tmpBounds
     end
