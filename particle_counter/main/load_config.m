@@ -54,7 +54,7 @@ function sctConfig = load_config(strConfigPath)
     end
 
     % Read columns of data according to format string.
-    celConfig = textscan(fidConfig, '%s%f', 'Delimiter', ',', 'ReturnOnError', false);
+    celConfig = textscan(fidConfig, '%s%f%s', 'Delimiter', ',', 'ReturnOnError', false);
 
     % Close the text file.
     fclose(fidConfig);
