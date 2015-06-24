@@ -1,12 +1,21 @@
-function output = image_initialization(raw_image, config)
-    % This function applies several standard operation including rgb2gray,
-    % crop, and normalization on the raw_image for any future analysis
-    % Import
-    % rgb2gray
-    if size(raw_image, 3) == 3
-        raw_image_gray = double(rgb2gray(raw_image));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This script is made by Kepstrum Inc. Canada
+% All rights reserved
+% Author: Pedram Ataee
+% Date: ??
+% Vers: 1.0
+%
+% Description:
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function output = image_initialization(imgRaw, config)
+    % Converts 3 channel image to 1 channel (image will always be
+    % grayscale unless camera changed)
+    if size(imgRaw, 3) == 3
+        imgRawGray = double(rgb2gray(imgRaw));
     else
-        raw_image_gray = raw_image;
+        imgRawGray = imgRaw;
     end
     % Update config
     x_center_window = 1227;
@@ -31,9 +40,9 @@ function output = image_initialization(raw_image, config)
 
     % crop
     if config.crop_option == 1
-        cropped_raw_image = imcrop(raw_image_gray, config.coordinates_cropped_image);
+        cropped_raw_image = imcrop(imgRawGray, config.coordinates_cropped_image);
     else
-        cropped_raw_image = raw_image_gray;
+        cropped_raw_image = imgRawGray;
     end
 
 
@@ -45,7 +54,7 @@ function output = image_initialization(raw_image, config)
     normalized_image = double(cropped_raw_image / max(cropped_raw_image(:)));
 
     % Output
-    output.raw_image         = raw_image_gray;
+    output.raw_image         = imgRawGray;
     output.cropped_raw_image = normalized_image;
     output.config            = config;
 
