@@ -55,6 +55,7 @@ function Config_OpeningFcn(hObject, ~, handles, varargin)
     
     clc
     handles = Initialize(handles);
+    addpath('Lumenera Matlab Driver V2.0.1 NEW 64 Bit')
     
     % Choose default command line output for Config
     handles.output = hObject;
@@ -421,13 +422,19 @@ function handles = plotSample(imgSample, handles)
     cla;
     hold on;
     
+    % Create size of small/big particle in pixels
     imgMinParticle = fspecial('disk',getBoxVal(handles.txtMinDiam) / ...
                                      getBoxVal(handles.txtPixelLen)/2);
     imgMinParticle(imgMinParticle>0) = 1;
     imgMaxParticle = fspecial('disk',getBoxVal(handles.txtMaxDiam) / ...
                                      getBoxVal(handles.txtPixelLen)/2);
     imgMaxParticle(imgMaxParticle>0) = 1;
+    
+    % Image Processing
+    imgSample = ProcessImage(imgSample,'bw',getBoxVal(handles.txtThreshold));
+%     imgSample = ProcessImage(imgSample,'remSmallObj',sum(imgMinParticle(:)));
 
+    % Add size of small and big particle to image
     sizMin = size(imgMinParticle);
     yOffset1 = floor(size(imgSample,1)/20);
     imgSample(yOffset1:sizMin(1)+yOffset1-1, 1:sizMin(2)) = ~imgMinParticle;
@@ -435,9 +442,6 @@ function handles = plotSample(imgSample, handles)
     sizMax = size(imgMaxParticle);
     yOffset2 = yOffset1 + sizMin(1) + floor(size(imgSample,1)/20);
     imgSample(yOffset2:sizMax(1)+yOffset2-1, 1:sizMax(2)) = ~imgMaxParticle;
-    
-    imgSample(imgSample>=getBoxVal(handles.txtThreshold)) = 1;
-    imgSample(imgSample<getBoxVal(handles.txtThreshold)) = 0;
 
     imshow(imgSample);
     
@@ -460,4 +464,13 @@ function handles = plotSample(imgSample, handles)
     set(get(handles.axeSampleImg,'Children'),'ButtonDownFcn',@axeSampleImg_ButtonDownFcn);
 end
 
+function imgProcessed = ProcessImage(imgRaw, strProcess, varargin)
+    switch strProcess
+        case 'bw'
+            imgProcessed = im2bw(imgRaw,varargin{1});
+        case 'remSmallObj'
+            imgProcessed = ~(bwareaopen(~imgRaw, varargin{1}));
+        otherwise    
+    end
+end
 %% Work in progress
