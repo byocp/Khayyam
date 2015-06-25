@@ -23,7 +23,7 @@ function varargout = Config(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 25-Jun-2015 11:51:44
+    % Last Modified by GUIDE v2.5 25-Jun-2015 20:16:29
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -136,11 +136,12 @@ function axeSampleImg_ButtonDownFcn(hObject, ~, ~)
     
     % Update handles structure
     guidata(handles.axeSampleImg, handles);
+    cbCrop_Callback(handles.cbCrop, [], handles)
 end
 
-% Executes when Enter is pressed
-function txtCenterX_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
-    if strcmp(eventdata.Key,'return') & ishandle(get(handles.axeSampleImg,'Children')) %#ok<AND2>
+% Executes when Enter or Tab is pressed
+function txtCenterX_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if ishandle(get(handles.axeSampleImg,'Children'))
         set(handles.hScatter,'XData',getBoxVal(hObject));
         posText = get(handles.hText,'Position');
         posText(1) = str2double(get(hObject,'String'));
@@ -152,9 +153,9 @@ function txtCenterX_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
     guidata(hObject, handles);
 end
 
-% Executes when Enter is pressed
-function txtCenterY_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
-    if strcmp(eventdata.Key,'return') & ishandle(get(handles.axeSampleImg,'Children')) %#ok<AND2>
+% Executes when Enter or Tab is pressed
+function txtCenterY_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if ishandle(get(handles.axeSampleImg,'Children'))
         set(handles.hScatter,'YData',getBoxVal(hObject));
         posText = get(handles.hText,'Position');
         posText(2) = str2double(get(hObject,'String')) - size(handles.imgRaw,1)/20;
@@ -166,37 +167,29 @@ function txtCenterY_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
     guidata(hObject, handles);
 end
 
-% Executes when Enter is pressed
-function txtGain_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
-    if strcmp(eventdata.Key,'return')
-        set(handles.sldGain,'Value',getBoxVal(hObject));
-    end
+% Executes when Enter or Tab is pressed
+function txtGain_Callback(hObject, ~, handles) %#ok<DEFNU>
+    set(handles.sldGain,'Value',getBoxVal(hObject));
     
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
     guidata(hObject, handles);
 end
 
-% Executes when Enter is pressed
-function txtGamma_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
-    if strcmp(eventdata.Key,'return')
-        set(handles.sldGamma,'Value',getBoxVal(hObject));
-    end
+% Executes when Enter or Tab is pressed
+function txtGamma_Callback(hObject, ~, handles) %#ok<DEFNU>
+    set(handles.sldGamma,'Value',getBoxVal(hObject));
     
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
     guidata(hObject, handles);
 end
 
-% Executes when Enter is pressed
-function txtThreshold_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
-    if strcmp(eventdata.Key,'return')
-        set(handles.sldThreshold,'Value',getBoxVal(hObject));
-        
-        if ishandle(get(handles.axeSampleImg,'Children'))
-            cbCrop_Callback(handles.cbCrop,[],handles);
-        end
-    end
+% Executes when Enter or Tab is pressed
+function txtThreshold_Callback(hObject, ~, handles) %#ok<DEFNU>
+    set(handles.sldThreshold,'Value',getBoxVal(hObject));
+
+    cbCrop_Callback(handles.cbCrop,[],handles);
     
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
@@ -225,45 +218,35 @@ end
 function sldThreshold_Callback(hObject, ~, handles) %#ok<DEFNU>
     set(handles.txtThreshold,'String',get(hObject,'Value'));
     
-    if ishandle(get(handles.axeSampleImg,'Children'))
-        cbCrop_Callback(handles.cbCrop,[],handles);
-    end
+    cbCrop_Callback(handles.cbCrop,[],handles);
     
     % Update handles structure
     [~,handles] = getBoxVal(handles.txtThreshold,handles);
     guidata(hObject, handles);
 end
 
-% Executes when Enter is pressed
-function txtCropWidth_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
-    if strcmp(eventdata.Key,'return')
-        cbCrop_Callback(handles.cbCrop, [], handles)
-    end
-    
+% Executes when Enter or Tab is pressed
+function txtCropWidth_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
     guidata(hObject, handles);
+    cbCrop_Callback(handles.cbCrop, [], handles)
 end
 
-% Executes when Enter is pressed
-function txtCropHeight_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
-    if strcmp(eventdata.Key,'return')
-        cbCrop_Callback(handles.cbCrop, [], handles)
-    end
-    
+% Executes when Enter or Tab is pressed
+function txtCropHeight_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
     guidata(hObject, handles);
+    cbCrop_Callback(handles.cbCrop, [], handles)
 end
 
-% Executes when Enter is pressed
-function txtFrameDepth_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
-    if strcmp(eventdata.Key,'return')
-        intFrameVol = getBoxVal(handles.txtFrameWidth) * ...
-                      getBoxVal(handles.txtFrameHeight) * ...
-                      getBoxVal(hObject);
-        set(handles.txtFrameVol,'String',intFrameVol);
-    end
+% Executes when Enter or Tab is pressed
+function txtFrameDepth_Callback(hObject, ~, handles) %#ok<DEFNU>
+    intFrameVol = getBoxVal(handles.txtFrameWidth) * ...
+                  getBoxVal(handles.txtFrameHeight) * ...
+                  getBoxVal(hObject);
+    set(handles.txtFrameVol,'String',intFrameVol);
     
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
@@ -271,19 +254,17 @@ function txtFrameDepth_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
     guidata(hObject, handles);
 end
 
-% Executes when Enter is pressed
-function txtPixelLen_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
-    if strcmp(eventdata.Key,'return')
-        intPixelLenOld = handles.Param.txtPixelLen;
-        intPixelLenNew = getBoxVal(hObject);
-        set(handles.txtFrameWidth,'String',getBoxVal(handles.FrameWidth) / ...
-                                           intPixelLenOld * intPixelLenNew);
-        set(handles.txtFrameHeight,'String',getBoxVal(handles.FrameHeight) / ...
-                                            intPixelLenOld * intPixelLenNew);
-        set(handles.txtFrameVol,'String',getBoxVal(handles.FrameWidth) * ...
-                                         getBoxVal(handles.FrameHeight) * ...
-                                         getBoxVal(handles.FrameDepth));
-    end
+% Executes when Enter or Tab is pressed
+function txtPixelLen_Callback(hObject, ~, handles) %#ok<DEFNU>
+    intPixelLenOld = handles.Param.txtPixelLen;
+    intPixelLenNew = getBoxVal(hObject);
+    set(handles.txtFrameWidth,'String',(getBoxVal(handles.txtFrameWidth) / ...
+                                       intPixelLenOld * intPixelLenNew));
+    set(handles.txtFrameHeight,'String',getBoxVal(handles.txtFrameHeight) / ...
+                                        intPixelLenOld * intPixelLenNew);
+    set(handles.txtFrameVol,'String',getBoxVal(handles.txtFrameWidth) * ...
+                                     getBoxVal(handles.txtFrameHeight) * ...
+                                     getBoxVal(handles.txtFrameDepth));
     
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
@@ -291,61 +272,65 @@ function txtPixelLen_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
     [~,handles] = getBoxVal(handles.txtFrameHeight,handles);
     [~,handles] = getBoxVal(handles.txtFrameVol,handles);
     guidata(hObject, handles);
+    
+    cbCrop_Callback(handles.cbCrop,[],handles);
 end
 
 % Executes on click
 function cbCrop_Callback(hObject, ~, handles)
-    if get(hObject,'Value')
-        % Enable crop textboxes
-        set(handles.txtCropWidth,'Enable','on')
-        set(handles.txtCropHeight,'Enable','on')
+    if ishandle(get(handles.axeSampleImg,'Children'))
+        if get(hObject,'Value')
+            % Enable crop textboxes
+            set(handles.txtCropWidth,'Enable','on')
+            set(handles.txtCropHeight,'Enable','on')
 
-        % Set crop rectangle
-        intWidth = floor(getBoxVal(handles.txtCropWidth)/getBoxVal(handles.txtPixelLen));
-        intHeight = floor(getBoxVal(handles.txtCropHeight)/getBoxVal(handles.txtPixelLen));
-        intLowerX = handles.Param.txtCenterX - floor(intWidth/2);
-        intLowerY = handles.Param.txtCenterY - floor(intHeight/2);
+            % Set crop rectangle
+            intWidth = floor(getBoxVal(handles.txtCropWidth)/getBoxVal(handles.txtPixelLen));
+            intHeight = floor(getBoxVal(handles.txtCropHeight)/getBoxVal(handles.txtPixelLen));
+            intLowerX = max(handles.Param.txtCenterX - floor(intWidth/2),0);
+            intLowerY = max(handles.Param.txtCenterY - floor(intHeight/2),0);
 
-        intCropWindow = [intLowerX, intLowerY, intWidth, intHeight];
+            intCropWindow = [intLowerX, intLowerY, intWidth, intHeight];
 
-        % Crop raw image
-        handles.imgRawCropped = imcrop(handles.imgRaw,intCropWindow);
+            % Crop raw image
+            handles.imgRawCropped = imcrop(handles.imgRaw,intCropWindow);
 
-        % Update center point
-        set(handles.txtCenterX,'String',floor(intWidth/2));
-        set(handles.txtCenterY,'String',floor(intHeight/2));
-        
-        [~,handles] = getBoxVal(handles.txtCenterX,handles);
-        [~,handles] = getBoxVal(handles.txtCenterY,handles);
+            % Update center point
+            set(handles.txtCenterX,'String',floor(intWidth/2));
+            set(handles.txtCenterY,'String',floor(intHeight/2));
 
-        % Update capture frame
-        set(handles.txtFrameWidth,'String',getBoxVal(handles.txtCropWidth))
-        set(handles.txtFrameHeight,'String',getBoxVal(handles.txtCropHeight))
-        set(handles.txtFrameVol,'String',getBoxVal(handles.txtCropWidth) * ...
-                                         getBoxVal(handles.txtCropHeight) * ...
-                                         getBoxVal(handles.txtFrameDepth))
-        
-        [~,handles] = getBoxVal(handles.txtFrameWidth,handles);
-        [~,handles] = getBoxVal(handles.txtFrameHeight,handles);
-        [~,handles] = getBoxVal(handles.txtFrameVol,handles);
+            [~,handles] = getBoxVal(handles.txtCenterX,handles);
+            [~,handles] = getBoxVal(handles.txtCenterY,handles);
 
-        % Plot cropped image
-        handles = plotSample(handles.imgRawCropped, handles);
-    else
-        set(handles.txtCropWidth,'Enable','off')
-        set(handles.txtCropHeight,'Enable','off')
+            % Update capture frame
+            set(handles.txtFrameWidth,'String',getBoxVal(handles.txtCropWidth))
+            set(handles.txtFrameHeight,'String',getBoxVal(handles.txtCropHeight))
+            set(handles.txtFrameVol,'String',getBoxVal(handles.txtCropWidth) * ...
+                                             getBoxVal(handles.txtCropHeight) * ...
+                                             getBoxVal(handles.txtFrameDepth))
 
-        % Update center point
-        set(handles.txtCenterX,'String',handles.Param.txtCenterX)
-        set(handles.txtCenterY,'String',handles.Param.txtCenterY)
+            [~,handles] = getBoxVal(handles.txtFrameWidth,handles);
+            [~,handles] = getBoxVal(handles.txtFrameHeight,handles);
+            [~,handles] = getBoxVal(handles.txtFrameVol,handles);
 
-        % Update capture frame
-        set(handles.txtFrameWidth,'String',handles.Param.txtFrameWidth)
-        set(handles.txtFrameHeight,'String',handles.Param.txtFrameHeight)
-        set(handles.txtFrameVol,'String',handles.Param.txtFrameVol)
+            % Plot cropped image
+            handles = plotSample(handles.imgRawCropped, handles);
+        else
+            set(handles.txtCropWidth,'Enable','off')
+            set(handles.txtCropHeight,'Enable','off')
 
-        % Plot cropped image
-        handles = plotSample(handles.imgRaw, handles);
+            % Update center point
+            set(handles.txtCenterX,'String',handles.Param.txtCenterX)
+            set(handles.txtCenterY,'String',handles.Param.txtCenterY)
+
+            % Update capture frame
+            set(handles.txtFrameWidth,'String',handles.Param.txtFrameWidth)
+            set(handles.txtFrameHeight,'String',handles.Param.txtFrameHeight)
+            set(handles.txtFrameVol,'String',handles.Param.txtFrameVol)
+
+            % Plot cropped image
+            handles = plotSample(handles.imgRaw, handles);
+        end
     end
     
     % Update handles structure
@@ -378,6 +363,89 @@ function btnConfig_Callback(~, ~, ~) %#ok<DEFNU>
     hmiConfig_CloseRequestFcn;
 end
 
+% Executes on click
+function cbSmallParticles_Callback(hObject, ~, handles) %#ok<DEFNU>
+    handles = UpdateCBValues(handles, 'cbBinary', get(hObject,'Value'));
+    guidata(hObject,handles);
+    cbCrop_Callback(handles.cbCrop,[],handles);
+end
+
+% Executes on click
+function cbBinary_Callback(hObject, ~, handles) %#ok<DEFNU>
+    hList = findobj('Parent',handles.pnlImgProc,'Style','checkbox');
+    
+    if get(hObject,'Value')
+        for i = 1:length(hList)
+            set(hList(i),'Enable','on','Value',handles.imgProcCB.(get(hList(i),'Tag')))
+        end
+        set(hObject,'Value',1);
+    else
+        for i = 1:length(hList)
+            handles.imgProcCB.(get(hList(i),'Tag')) = get(hList(i),'Value');
+            set(hList(i),'Enable','off','Value',0)
+        end
+        set(hObject,'Enable','on')
+    end
+    
+    handles = UpdateCBValues(handles, 'cbBinary', get(hObject,'Value'));
+    guidata(hObject,handles);
+    cbCrop_Callback(handles.cbCrop,[],handles);
+end
+
+% Executes on click
+function cbRemoveBorder_Callback(hObject, ~, handles) %#ok<DEFNU>
+    handles = UpdateCBValues(handles, 'cbBinary', get(hObject,'Value'));
+    guidata(hObject,handles);
+    cbCrop_Callback(handles.cbCrop,[],handles);
+end
+
+% Executes on click
+function cbRoundness_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if get(hObject,'Value')
+        set(handles.txtRoundLow,'Enable','on')
+        set(handles.txtRoundHigh,'Enable','on')
+    else
+        set(handles.txtRoundLow,'Enable','off')
+        set(handles.txtRoundHigh,'Enable','off')
+    end
+    
+    handles = UpdateCBValues(handles, 'cbBinary', get(hObject,'Value'));
+    guidata(hObject,handles);
+    cbCrop_Callback(handles.cbCrop,[],handles);
+end
+
+% Executes when Enter or Tab is pressed
+function txtRoundHigh_Callback(hObject, ~, handles) %#ok<DEFNU>
+    % Update handles structure
+    [~,handles] = getBoxVal(hObject,handles);
+    guidata(hObject, handles);
+    cbCrop_Callback(handles.cbCrop, [], handles)
+end
+
+% Executes when Enter or Tab is pressed
+function txtRoundLow_Callback(hObject, ~, handles) %#ok<DEFNU>
+    % Update handles structure
+    [~,handles] = getBoxVal(hObject,handles);
+    guidata(hObject, handles);
+    cbCrop_Callback(handles.cbCrop, [], handles)
+end
+
+% Executes when Enter or Tab is pressed
+function txtMinDiam_Callback(hObject, ~, handles) %#ok<DEFNU>
+    % Update handles structure
+    [~,handles] = getBoxVal(hObject,handles);
+    guidata(hObject, handles);
+    cbCrop_Callback(handles.cbCrop, [], handles)
+end
+
+% Executes when Enter or Tab is pressed
+function txtMaxDiam_Callback(hObject, ~, handles) %#ok<DEFNU>
+    % Update handles structure
+    [~,handles] = getBoxVal(hObject,handles);
+    guidata(hObject, handles);
+    cbCrop_Callback(handles.cbCrop, [], handles)
+end
+
 %% Custom Functions
 
 % Initialization
@@ -391,6 +459,14 @@ function handles = Initialize(handles)
     
     handles.Param.cbCrop = 0;
     handles.ParamC.cbCrop = 1;
+    
+    hList = findobj('Parent',handles.pnlImgProc,'Style','checkbox');
+    
+    for i = 1:length(hList)
+        handles.Param.(get(hList(i),'Tag')) = get(hList(i),'Value');
+        handles.ParamC.(get(hList(i),'Tag')) = get(hList(i),'Value');
+        handles.imgProcCB.(get(hList(i),'Tag')) = get(hList(i),'Value');
+    end
     
     % Update handles structure
     guidata(handles.hmiConfig, handles);
@@ -425,25 +501,44 @@ function handles = plotSample(imgSample, handles)
     % Create size of small/big particle in pixels
     imgMinParticle = fspecial('disk',getBoxVal(handles.txtMinDiam) / ...
                                      getBoxVal(handles.txtPixelLen)/2);
-    imgMinParticle(imgMinParticle>0) = 1;
+    imgMinParticle(imgMinParticle>0) = 0.5;
     imgMaxParticle = fspecial('disk',getBoxVal(handles.txtMaxDiam) / ...
                                      getBoxVal(handles.txtPixelLen)/2);
-    imgMaxParticle(imgMaxParticle>0) = 1;
+    imgMaxParticle(imgMaxParticle>0) = 0.5;
     
     % Image Processing
-    imgSample = ProcessImage(imgSample,'bw',getBoxVal(handles.txtThreshold));
-%     imgSample = ProcessImage(imgSample,'remSmallObj',sum(imgMinParticle(:)));
+    if get(handles.cbBinary,'Value')
+        imgSample = ProcessImage(imgSample,'bw',getBoxVal(handles.txtThreshold));
+    end
+    if get(handles.cbSmallParticles,'Value')
+        imgSample = ProcessImage(imgSample,'remSmallObj',sum(imgMinParticle(:))*2);
+    end
+    if get(handles.cbRemoveBorder,'Value')
+        imgSample = ProcessImage(imgSample,'remBorder');
+    end
+    if get(handles.cbRoundness,'Value')
+        imgSample = ProcessImage(imgSample,'Roundness',handles);
+    end
 
     % Add size of small and big particle to image
     sizMin = size(imgMinParticle);
-    yOffset1 = floor(size(imgSample,1)/20);
-    imgSample(yOffset1:sizMin(1)+yOffset1-1, 1:sizMin(2)) = ~imgMinParticle;
-
     sizMax = size(imgMaxParticle);
+    yOffset1 = floor(size(imgSample,1)/20);
     yOffset2 = yOffset1 + sizMin(1) + floor(size(imgSample,1)/20);
-    imgSample(yOffset2:sizMax(1)+yOffset2-1, 1:sizMax(2)) = ~imgMaxParticle;
+    minMaxExample = ones(yOffset2,sizMax(2));
+    minMaxExample(yOffset1:sizMin(1)+yOffset1-1, 1:sizMin(2)) = imgMinParticle;
+    minMaxExample(yOffset2:sizMax(1)+yOffset2-1, 1:sizMax(2)) = 1-imgMaxParticle;
+    
+%     sizMin = size(imgMinParticle);
+%     yOffset1 = floor(size(imgSample,1)/20);
+%     imgSample(yOffset1:sizMin(1)+yOffset1-1, 1:sizMin(2)) = 1-imgMinParticle;
+% 
+%     sizMax = size(imgMaxParticle);
+%     yOffset2 = yOffset1 + sizMin(1) + floor(size(imgSample,1)/20);
+%     imgSample(yOffset2:sizMax(1)+yOffset2-1, 1:sizMax(2)) = 1-imgMaxParticle;
 
     imshow(imgSample);
+    imshow(minMaxExample);
     
     text(sizMin(2)+10,sizMin(1)/2+yOffset1, ...
          'Min Particle Size', ...
@@ -466,11 +561,33 @@ end
 
 function imgProcessed = ProcessImage(imgRaw, strProcess, varargin)
     switch strProcess
-        case 'bw'
+        case 'bw'   % Change to binary image
             imgProcessed = im2bw(imgRaw,varargin{1});
-        case 'remSmallObj'
+        case 'remSmallObj'  % Remove objects smaller than Min Particle Diameter
             imgProcessed = ~(bwareaopen(~imgRaw, varargin{1}));
-        otherwise    
+        case 'remBorder'    % Remove borders
+            imgProcessed = ~(imclearborder(~imgRaw));
+        case 'Roundness'
+            handles = varargin{1};
+            objBound = bwboundaries(~imgRaw,'noholes');
+            RProp = regionprops(~imgRaw, 'Area', 'Perimeter');
+            for i = 1:length(objBound)
+                isRound = 4 * pi * RProp(i).Area / RProp(i).Perimeter^2;
+                if isRound < getBoxVal(handles.txtRoundLow) || isRound > getBoxVal(handles.txtRoundHigh)
+                    imgRaw(objBound{i}(:,1),objBound{i}(:,2)) = 1;
+                end
+            end
+            
+            imgProcessed = imgRaw;
     end
 end
+
+function handles = UpdateCBValues(handles, strCBTag, binValue)
+    handles.Param.(strCBTag) = binValue;
+    handles.ParamC.(strCBTag) = binValue;
+    handles.imgProcCB.(strCBTag) = binValue;
+end
+
 %% Work in progress
+
+
