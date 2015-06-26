@@ -10,17 +10,14 @@
 % 
 % Updates:
 % 1. Save particle Histogram plot for each step to file Hist.jpeg in the root
-%       directry of software for further using in C# HMI display.
+%       directry of software for further using in C# HMI display
 % 2. Save particle g/L over time plot for each step to file g_per_L.jpeg in
 %       the root directry of the software for further using in C# HMI
-%       display.
+%       display
 % 3. Re-design Histogram calculation function to frozen the bin size and range;
-%       re-place the old Histogram calculation function to speed up the
-%       process.
-% 4. Make particle Histogram calculation optional for 'minor_axis',
-%       'equiv_diam', 'major_axis'.
-% 5. Save particle Histogram calculation result in test data file
-%       contamination.txt in the root directry of software.
+%   re-design the Histogram 
+% 4. Save particle Histogram calculation result in test data file
+%       contamination.txt in the root directry of software 
 %
 % Description:
 % MATLAB based HMI for the vision sensor, temporary standalone solution

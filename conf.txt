@@ -1,13 +1,13 @@
-lucam_snapshot_exposure, 0.1				, Controls how much light comes into the camera
-lucam_gain, 2						, ???
+lucam_snapshot_exposure, 0.02				, Controls camera snapshot exposure time in second(range: 2 us to 71 min)
+lucam_gain, 2						, camera snapshot exposure gain(range: 1 to 25.6x)
 
-crop_option, 1						, 1 = Crop image; 0 = Do not crop
-half_of_width_millimeter, 15				, width of crop window from center
-half_of_length_millimeter, 10				, length of crop window from center
+crop_option, 1						, enable image corpping function
+half_of_width_millimeter, 20				, width of crop window from center
+half_of_length_millimeter, 8				, length of crop window from center
 density_of_material_kg_per_cubic_meter, 2700		, particle density used for mass calculation
-volume_of_total_liquid_in_system_liter, 1.7		, liquid volume used for concentration calculation
-max_particle_diameter_millimeter, 3.5			, upper limit for particle detection
-min_particle_diameter_millimeter, 0.3			, lower limit for particle detection
+volume_of_total_liquid_in_system_liter, 1.7		, liquid volume used for concentration calculation(not use in code yet)
+max_particle_diameter_millimeter, 2.2			, upper limit for particle detection in mm
+min_particle_diameter_millimeter, 0.3			, lower limit for particle detection in mm
 pixel_area_squared_millimeter, 0.00072			, pixel to mm^2 conversion factor
 pixel_length_millimeter, 0.027305			, pixel length to mm conversion factor
 moving_average_length, 1				, number of samples to take an average over
@@ -16,14 +16,14 @@ threshold_circularity_2, 0.1				, lower circularity index
 bubble_detection_threshold, 0.7				, ???
 
 
-boost, 0						, image boosting?
-enhance_image_adapthisteq, 0				, histogram equalization
-enhance_image_imadjust, 0				, image adjustment?
+boost, 0						, enable boost image processing
+enhance_image_adapthisteq, 0				, enable histogram equalization
+enhance_image_imadjust, 0				, enable image adjustment?
 enhance_image_decorrstretch, 0				, ???
 gaussian_filter, 0					, gaussian filter for smoothing out noise
-investigation_process, 0				, ???
-investigation_final, 0					, ???
-investigation_excel_report, 0				, ???
+investigation_process, 0				, enable output for debugging matlab code for particle counter
+investigation_final, 0					, enable output for debugging matlab code for particle counter
+investigation_excel_report, 0				, enable output for debugging matlab code for particle counter
 
-otsu_method, 0						, otsu's method for thresholding
+otsu_method, 0						, enable otsu's method for thresholding
 image_threshold, 0.48					, manual thresholding
