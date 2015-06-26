@@ -1,4 +1,8 @@
-%% GUI Functions
+%% Notes
+% Add histogram/g/L output charts
+% Add output file?
+
+%% Main GUI Functions
 function varargout = Config(varargin)
     % CONFIG MATLAB code for Config.fig
     %      CONFIG, by itself, creates a new CONFIG or raises the existing
@@ -23,7 +27,7 @@ function varargout = Config(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 25-Jun-2015 20:16:29
+    % Last Modified by GUIDE v2.5 26-Jun-2015 02:11:40
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -37,10 +41,27 @@ function varargout = Config(varargin)
         gui_State.gui_Callback = str2func(varargin{1});
     end
 
-    if nargout
-        [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
-    else
-        gui_mainfcn(gui_State, varargin{:});
+    try
+        if nargout
+            [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+        else
+            gui_mainfcn(gui_State, varargin{:});
+        end
+    catch ERROR
+        mkdir('ErrorLog')
+        logError = fopen('ErrorLog\ERROR.txt','a');
+
+        strErrorTime = datestr(now);
+        fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
+                          '%-' int2str(length(ERROR.message)) 's\r\n'...
+                          ],strErrorTime,ERROR.message);
+        strErrorTime = regexprep(strErrorTime,':','');
+        stcMemory = memory; %#ok<NASGU>
+        save(['Error ' strErrorTime '.mat'],'ERROR','stcMemory');
+
+        fclose(logError);
+        strError = regexprep(['ErrorLog\Error ' datestr(now) '.mat'],':','');
+        save(strError,'ERROR');
     end
 end
 % End initialization code - DO NOT EDIT
@@ -90,55 +111,7 @@ function hmiConfig_CloseRequestFcn(~, ~, ~)
     uiresume;
 end
 
-% Executes on mouse click on axis or its plots
-function axeSampleImg_ButtonDownFcn(hObject, ~, ~)
-    % Gets the handles object, done this way due to function mapping on
-    % children plots (see below)
-    handles = guidata(hObject);
-    
-    % Get tag of selected radial button
-    strSource = get(get(handles.pnlSource,'SelectedObject'),'Tag');
-    
-    switch strSource
-        case 'radCamera'
-            % Get image capture parameters
-            dblExposure = getBoxVal(handles.txtExposure);
-            dblGain = getBoxVal(handles.txtGain);
-            dblGamma = getBoxVal(handles.txtGamma);
-            
-            handles.imgRaw = automated_frame_capture(dblExposure, dblGain, dblGamma);
-            
-            if handles.imgRaw == -1
-                errordlg('Error while retrieving picture from camera')
-                return;
-            end
-        case 'radFromFile'
-            [strFileName, strPath] = uigetfile({'*.jpg','JPEG Files'},...
-                                                    'Select Image File');
-            if ~strFileName
-                errordlg('No file selected')
-                return;
-            end
-            
-            handles.imgRaw = imread([strPath strFileName]);
-    end
-    
-    % Set image to grayscale
-    if size(handles.imgRaw,3) == 3
-        handles.imgRaw = rgb2gray(handles.imgRaw);
-    end
-    handles.imgRaw = double(handles.imgRaw);
-    handles.imgRaw = handles.imgRaw ./ max(handles.imgRaw(:));
-    
-    handles = plotSample(handles.imgRaw, handles);
-    
-    set(handles.cbCrop,'Enable','on');
-    
-    % Update handles structure
-    guidata(handles.axeSampleImg, handles);
-    cbCrop_Callback(handles.cbCrop, [], handles)
-end
-
+%% Image Settings (Textboxes)
 % Executes when Enter or Tab is pressed
 function txtCenterX_Callback(hObject, ~, handles) %#ok<DEFNU>
     if ishandle(get(handles.axeSampleImg,'Children'))
@@ -196,6 +169,23 @@ function txtThreshold_Callback(hObject, ~, handles) %#ok<DEFNU>
     guidata(hObject, handles);
 end
 
+% Executes when Enter or Tab is pressed
+function txtCropWidth_Callback(hObject, ~, handles) %#ok<DEFNU>
+    % Update handles structure
+    [~,handles] = getBoxVal(hObject,handles);
+    guidata(hObject, handles);
+    cbCrop_Callback(handles.cbCrop, [], handles)
+end
+
+% Executes when Enter or Tab is pressed
+function txtCropHeight_Callback(hObject, ~, handles) %#ok<DEFNU>
+    % Update handles structure
+    [~,handles] = getBoxVal(hObject,handles);
+    guidata(hObject, handles);
+    cbCrop_Callback(handles.cbCrop, [], handles)
+end
+
+%% Image Settings (Sliders)
 % Executes on slider movement.
 function sldGain_Callback(hObject, ~, handles) %#ok<DEFNU>
     set(handles.txtGain,'String',get(hObject,'Value'));
@@ -225,55 +215,59 @@ function sldThreshold_Callback(hObject, ~, handles) %#ok<DEFNU>
     guidata(hObject, handles);
 end
 
-% Executes when Enter or Tab is pressed
-function txtCropWidth_Callback(hObject, ~, handles) %#ok<DEFNU>
+%% Image Settings (Other)
+% Executes on mouse click on axis or its plots
+function axeSampleImg_ButtonDownFcn(hObject, ~, ~)
+    % Gets the handles object, done this way due to function mapping on
+    % children plots (see below)
+    handles = guidata(hObject);
+    
+    % Get tag of selected radial button
+    strSource = get(get(handles.pnlSource,'SelectedObject'),'Tag');
+    
+    if isfield(handles,'imgRaw')
+        handles.imgCompare = handles.imgRaw;
+        set(handles.cbFilterStatic,'Enable','on');
+    end
+    
+    switch strSource
+        case 'radCamera'
+            % Get image capture parameters
+            dblExposure = getBoxVal(handles.txtExposure);
+            dblGain = getBoxVal(handles.txtGain);
+            dblGamma = getBoxVal(handles.txtGamma);
+            
+            handles.imgRaw = automated_frame_capture(dblExposure, dblGain, dblGamma);
+            
+            if handles.imgRaw == -1
+                errordlg('Error while retrieving picture from camera')
+                return;
+            end
+        case 'radFromFile'
+            [strFileName, strPath] = uigetfile({'*.jpg','JPEG Files'},...
+                                                    'Select Image File');
+            if ~strFileName
+                errordlg('No file selected')
+                return;
+            end
+            
+            handles.imgRaw = imread([strPath strFileName]);
+    end
+    
+    % Set image to grayscale
+    if size(handles.imgRaw,3) == 3
+        handles.imgRaw = rgb2gray(handles.imgRaw);
+    end
+    handles.imgRaw = double(handles.imgRaw);
+    handles.imgRaw = handles.imgRaw ./ 255;
+    
+    handles = plotSample(handles.imgRaw, handles);
+    
+    set(handles.cbCrop,'Enable','on');
+    
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
-    guidata(hObject, handles);
+    guidata(handles.axeSampleImg, handles);
     cbCrop_Callback(handles.cbCrop, [], handles)
-end
-
-% Executes when Enter or Tab is pressed
-function txtCropHeight_Callback(hObject, ~, handles) %#ok<DEFNU>
-    % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
-    guidata(hObject, handles);
-    cbCrop_Callback(handles.cbCrop, [], handles)
-end
-
-% Executes when Enter or Tab is pressed
-function txtFrameDepth_Callback(hObject, ~, handles) %#ok<DEFNU>
-    intFrameVol = getBoxVal(handles.txtFrameWidth) * ...
-                  getBoxVal(handles.txtFrameHeight) * ...
-                  getBoxVal(hObject);
-    set(handles.txtFrameVol,'String',intFrameVol);
-    
-    % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
-    [~,handles] = getBoxVal(handles.txtFrameVol,handles);
-    guidata(hObject, handles);
-end
-
-% Executes when Enter or Tab is pressed
-function txtPixelLen_Callback(hObject, ~, handles) %#ok<DEFNU>
-    intPixelLenOld = handles.Param.txtPixelLen;
-    intPixelLenNew = getBoxVal(hObject);
-    set(handles.txtFrameWidth,'String',(getBoxVal(handles.txtFrameWidth) / ...
-                                       intPixelLenOld * intPixelLenNew));
-    set(handles.txtFrameHeight,'String',getBoxVal(handles.txtFrameHeight) / ...
-                                        intPixelLenOld * intPixelLenNew);
-    set(handles.txtFrameVol,'String',getBoxVal(handles.txtFrameWidth) * ...
-                                     getBoxVal(handles.txtFrameHeight) * ...
-                                     getBoxVal(handles.txtFrameDepth));
-    
-    % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
-    [~,handles] = getBoxVal(handles.txtFrameWidth,handles);
-    [~,handles] = getBoxVal(handles.txtFrameHeight,handles);
-    [~,handles] = getBoxVal(handles.txtFrameVol,handles);
-    guidata(hObject, handles);
-    
-    cbCrop_Callback(handles.cbCrop,[],handles);
 end
 
 % Executes on click
@@ -346,26 +340,61 @@ function pnlSource_SelectionChangeFcn(hObject, eventdata, handles) %#ok<DEFNU>
             set(handles.txtExposure,'Enable','on')
             set(handles.sldGain,'Enable','on')
             set(handles.sldGamma,'Enable','on')
+            set(handles.tglContinuous,'Enable','on')
         case 'radFromFile'
             set(handles.txtGain,'Enable','off')
             set(handles.txtGamma,'Enable','off')
             set(handles.txtExposure,'Enable','off')
             set(handles.sldGain,'Enable','off')
             set(handles.sldGamma,'Enable','off')
+            set(handles.tglContinuous,'Enable','off')
     end
     
     % Update handles structure
     guidata(hObject, handles);
 end
 
-% Executes on button press in btnConfig.
-function btnConfig_Callback(~, ~, ~) %#ok<DEFNU>
-    hmiConfig_CloseRequestFcn;
+%% Calculation Parameters
+% Executes when Enter or Tab is pressed
+function txtFrameDepth_Callback(hObject, ~, handles) %#ok<DEFNU>
+    intFrameVol = getBoxVal(handles.txtFrameWidth) * ...
+                  getBoxVal(handles.txtFrameHeight) * ...
+                  getBoxVal(hObject);
+    set(handles.txtFrameVol,'String',intFrameVol);
+    
+    % Update handles structure
+    [~,handles] = getBoxVal(hObject,handles);
+    [~,handles] = getBoxVal(handles.txtFrameVol,handles);
+    guidata(hObject, handles);
 end
 
+%% Other Settings
+% Executes when Enter or Tab is pressed
+function txtPixelLen_Callback(hObject, ~, handles) %#ok<DEFNU>
+    intPixelLenOld = handles.Param.txtPixelLen;
+    intPixelLenNew = getBoxVal(hObject);
+    set(handles.txtFrameWidth,'String',(getBoxVal(handles.txtFrameWidth) / ...
+                                       intPixelLenOld * intPixelLenNew));
+    set(handles.txtFrameHeight,'String',getBoxVal(handles.txtFrameHeight) / ...
+                                        intPixelLenOld * intPixelLenNew);
+    set(handles.txtFrameVol,'String',getBoxVal(handles.txtFrameWidth) * ...
+                                     getBoxVal(handles.txtFrameHeight) * ...
+                                     getBoxVal(handles.txtFrameDepth));
+    
+    % Update handles structure
+    [~,handles] = getBoxVal(hObject,handles);
+    [~,handles] = getBoxVal(handles.txtFrameWidth,handles);
+    [~,handles] = getBoxVal(handles.txtFrameHeight,handles);
+    [~,handles] = getBoxVal(handles.txtFrameVol,handles);
+    guidata(hObject, handles);
+    
+    cbCrop_Callback(handles.cbCrop,[],handles);
+end
+
+%% Image Processing Options
 % Executes on click
-function cbSmallParticles_Callback(hObject, ~, handles) %#ok<DEFNU>
-    handles = UpdateCBValues(handles, 'cbBinary', get(hObject,'Value'));
+function cbOutOfRange_Callback(hObject, ~, handles) %#ok<DEFNU>
+    handles = UpdateCBValues(handles, 'cbOutOfRange', get(hObject,'Value'));
     guidata(hObject,handles);
     cbCrop_Callback(handles.cbCrop,[],handles);
 end
@@ -376,15 +405,17 @@ function cbBinary_Callback(hObject, ~, handles) %#ok<DEFNU>
     
     if get(hObject,'Value')
         for i = 1:length(hList)
-            set(hList(i),'Enable','on','Value',handles.imgProcCB.(get(hList(i),'Tag')))
+            if ~strcmp(get(hList(i),'Tag'),{'cbBinary';'cbFilterStatic'})
+                set(hList(i),'Enable','on','Value',handles.imgProcCB.(get(hList(i),'Tag')))
+            end
         end
-        set(hObject,'Value',1);
     else
         for i = 1:length(hList)
-            handles.imgProcCB.(get(hList(i),'Tag')) = get(hList(i),'Value');
-            set(hList(i),'Enable','off','Value',0)
+            if ~strcmp(get(hList(i),'Tag'),{'cbNormalize';'cbBinary';'cbFilterStatic'})
+                handles.imgProcCB.(get(hList(i),'Tag')) = get(hList(i),'Value');
+                set(hList(i),'Enable','off','Value',0)
+            end
         end
-        set(hObject,'Enable','on')
     end
     
     handles = UpdateCBValues(handles, 'cbBinary', get(hObject,'Value'));
@@ -394,7 +425,7 @@ end
 
 % Executes on click
 function cbRemoveBorder_Callback(hObject, ~, handles) %#ok<DEFNU>
-    handles = UpdateCBValues(handles, 'cbBinary', get(hObject,'Value'));
+    handles = UpdateCBValues(handles, 'cbRemoveBorder', get(hObject,'Value'));
     guidata(hObject,handles);
     cbCrop_Callback(handles.cbCrop,[],handles);
 end
@@ -409,7 +440,7 @@ function cbRoundness_Callback(hObject, ~, handles) %#ok<DEFNU>
         set(handles.txtRoundHigh,'Enable','off')
     end
     
-    handles = UpdateCBValues(handles, 'cbBinary', get(hObject,'Value'));
+    handles = UpdateCBValues(handles, 'cbRoundness', get(hObject,'Value'));
     guidata(hObject,handles);
     cbCrop_Callback(handles.cbCrop,[],handles);
 end
@@ -446,10 +477,27 @@ function txtMaxDiam_Callback(hObject, ~, handles) %#ok<DEFNU>
     cbCrop_Callback(handles.cbCrop, [], handles)
 end
 
-%% Custom Functions
+% Executes on click
+function cbFilterStatic_Callback(hObject, ~, handles) %#ok<DEFNU>
+    handles = UpdateCBValues(handles, 'cbFilterStatic', get(hObject,'Value'));
+    guidata(hObject,handles);
+    cbCrop_Callback(handles.cbCrop,[],handles);
+end
 
+% Executes on click
+function cbNormalize_Callback(hObject, ~, handles) %#ok<DEFNU>
+    handles = UpdateCBValues(handles, 'cbNormalize', get(hObject,'Value'));
+    guidata(hObject,handles);
+    cbCrop_Callback(handles.cbCrop,[],handles);
+end
+
+%% Custom Functions
 % Initialization
 function handles = Initialize(handles)
+    intGUISize = get(handles.hmiConfig,'Position');
+    intGUISize(3) = 133;
+    set(handles.hmiConfig,'Position',intGUISize);
+    
     hList = findobj('Style','edit');
     
     for i = 1:length(hList)
@@ -507,11 +555,14 @@ function handles = plotSample(imgSample, handles)
     imgMaxParticle(imgMaxParticle>0) = 0.5;
     
     % Image Processing
+    if get(handles.cbNormalize,'Value')
+        imgSample = ProcessImage(imgSample,'Normalize');
+    end
     if get(handles.cbBinary,'Value')
         imgSample = ProcessImage(imgSample,'bw',getBoxVal(handles.txtThreshold));
     end
-    if get(handles.cbSmallParticles,'Value')
-        imgSample = ProcessImage(imgSample,'remSmallObj',sum(imgMinParticle(:))*2);
+    if get(handles.cbOutOfRange,'Value')
+        imgSample = ProcessImage(imgSample,'remOutOfRange',sum(imgMinParticle(:))*2,sum(imgMaxParticle(:))*2);
     end
     if get(handles.cbRemoveBorder,'Value')
         imgSample = ProcessImage(imgSample,'remBorder');
@@ -519,6 +570,10 @@ function handles = plotSample(imgSample, handles)
     if get(handles.cbRoundness,'Value')
         imgSample = ProcessImage(imgSample,'Roundness',handles);
     end
+    if get(handles.cbFilterStatic,'Value')
+        imgSample = ProcessImage(imgSample,'Static', handles);
+    end
+    handles.imgProcessed = imgSample;
 
     % Add size of small and big particle to image
     sizMin = size(imgMinParticle);
@@ -526,16 +581,8 @@ function handles = plotSample(imgSample, handles)
     yOffset1 = floor(size(imgSample,1)/20);
     yOffset2 = yOffset1 + sizMin(1) + floor(size(imgSample,1)/20);
     minMaxExample = ones(yOffset2,sizMax(2));
-    minMaxExample(yOffset1:sizMin(1)+yOffset1-1, 1:sizMin(2)) = imgMinParticle;
+    minMaxExample(yOffset1:sizMin(1)+yOffset1-1, 1:sizMin(2)) = 1-imgMinParticle;
     minMaxExample(yOffset2:sizMax(1)+yOffset2-1, 1:sizMax(2)) = 1-imgMaxParticle;
-    
-%     sizMin = size(imgMinParticle);
-%     yOffset1 = floor(size(imgSample,1)/20);
-%     imgSample(yOffset1:sizMin(1)+yOffset1-1, 1:sizMin(2)) = 1-imgMinParticle;
-% 
-%     sizMax = size(imgMaxParticle);
-%     yOffset2 = yOffset1 + sizMin(1) + floor(size(imgSample,1)/20);
-%     imgSample(yOffset2:sizMax(1)+yOffset2-1, 1:sizMax(2)) = 1-imgMaxParticle;
 
     imshow(imgSample);
     imshow(minMaxExample);
@@ -561,10 +608,24 @@ end
 
 function imgProcessed = ProcessImage(imgRaw, strProcess, varargin)
     switch strProcess
+        case 'Normalize'
+            imgProcessed = (imgRaw - min(imgRaw(:))) ./ (max(imgRaw(:))-min(imgRaw(:)));
         case 'bw'   % Change to binary image
             imgProcessed = im2bw(imgRaw,varargin{1});
-        case 'remSmallObj'  % Remove objects smaller than Min Particle Diameter
-            imgProcessed = ~(bwareaopen(~imgRaw, varargin{1}));
+        case 'remOutOfRange'  % Remove objects smaller than Min Particle Diameter
+            imgRaw = ~(bwareaopen(~imgRaw, varargin{1}));
+            
+            intTooBig = varargin{2};
+            imgNoBorder = ~(imclearborder(~imgRaw));
+            objBound = bwboundaries(~imgNoBorder,'noholes');
+            RProp = regionprops(~imgNoBorder, 'Area', 'Perimeter');
+            for i = 1:length(objBound)
+                if RProp(i).Area > intTooBig
+                    imgRaw(objBound{i}(:,1),objBound{i}(:,2)) = 1;
+                end
+            end
+            
+            imgProcessed = imgRaw;
         case 'remBorder'    % Remove borders
             imgProcessed = ~(imclearborder(~imgRaw));
         case 'Roundness'
@@ -579,6 +640,13 @@ function imgProcessed = ProcessImage(imgRaw, strProcess, varargin)
             end
             
             imgProcessed = imgRaw;
+        case 'Static'
+            handles = varargin{1};
+            imgOld = im2bw(handles.imgCompare, getBoxVal(handles.txtThreshold));
+            imgNew = im2bw(handles.imgRaw, getBoxVal(handles.txtThreshold));
+            binCompare = imgNew - imgOld;
+            imgRaw(binCompare == 0) = max(imgRaw(:));
+            imgProcessed = imgRaw;
     end
 end
 
@@ -588,6 +656,27 @@ function handles = UpdateCBValues(handles, strCBTag, binValue)
     handles.imgProcCB.(strCBTag) = binValue;
 end
 
+%% Not Used
+% Executes on button press in btnConfig.
+function btnConfig_Callback(~, ~, ~) %#ok<DEFNU>
+    hmiConfig_CloseRequestFcn;
+end
+
 %% Work in progress
 
 
+% --- Executes on button press in tglContinuous.
+function tglContinuous_Callback(hObject, eventdata, handles)
+% Reset pause
+% resize window
+% Tic Toc
+end
+
+% --- Executes on button press in tglPause.
+function tglPause_Callback(hObject, eventdata, handles)
+% hObject    handle to tglPause (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of tglPause
+end
