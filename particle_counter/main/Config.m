@@ -27,7 +27,7 @@ function varargout = Config(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 26-Jun-2015 02:11:40
+    % Last Modified by GUIDE v2.5 26-Jun-2015 04:23:08
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -41,28 +41,28 @@ function varargout = Config(varargin)
         gui_State.gui_Callback = str2func(varargin{1});
     end
 
-    try
+%     try
         if nargout
             [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
         else
             gui_mainfcn(gui_State, varargin{:});
         end
-    catch ERROR
-        mkdir('ErrorLog')
-        logError = fopen('ErrorLog\ERROR.txt','a');
-
-        strErrorTime = datestr(now);
-        fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
-                          '%-' int2str(length(ERROR.message)) 's\r\n'...
-                          ],strErrorTime,ERROR.message);
-        strErrorTime = regexprep(strErrorTime,':','');
-        stcMemory = memory; %#ok<NASGU>
-        save(['Error ' strErrorTime '.mat'],'ERROR','stcMemory');
-
-        fclose(logError);
-        strError = regexprep(['ErrorLog\Error ' datestr(now) '.mat'],':','');
-        save(strError,'ERROR');
-    end
+%     catch ERROR
+%         if ~isdir('ErrorLog')
+%             mkdir('ErrorLog')
+%         end
+%         logError = fopen('ErrorLog\ERROR.txt','a');
+% 
+%         strErrorTime = datestr(now);
+%         fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
+%                           '%-' int2str(length(ERROR.message)) 's\r\n'...
+%                           ],strErrorTime,ERROR.message);
+%         strErrorTime = regexprep(strErrorTime,':','');
+%         stcMemory = memory; %#ok<NASGU>
+%         save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
+% 
+%         fclose(logError);
+%     end
 end
 % End initialization code - DO NOT EDIT
 
@@ -85,11 +85,11 @@ function Config_OpeningFcn(hObject, ~, handles, varargin)
     guidata(hObject, handles);
 
     % UIWAIT makes Config wait for user response (see UIRESUME)
-    uiwait(handles.hmiConfig);
+    % uiwait(handles.hmiConfig);
 end
 
 % --- Outputs from this function are returned to the command line.
-function varargout = Config_OutputFcn(hObject, ~, handles) 
+function varargout = Config_OutputFcn(hObject, ~, handles)  %#ok<INUSL>
     % varargout  cell array for returning output args (see VARARGOUT);
     % hObject    handle to figure
     % eventdata  reserved - to be defined in a future version of MATLAB
@@ -102,13 +102,14 @@ function varargout = Config_OutputFcn(hObject, ~, handles)
         varargout{1} = handles.Param;
     end
         
-    delete(hObject);
-    clc
+%     delete(hObject);
+%     clc
 end
 
 % --- Executes when user attempts to close hmiConfig.
-function hmiConfig_CloseRequestFcn(~, ~, ~)
-    uiresume;
+function hmiConfig_CloseRequestFcn(hObject, ~, ~) %#ok<DEFNU>
+    delete(hObject);
+    % uiresume;
 end
 
 %% Image Settings (Textboxes)
@@ -261,7 +262,7 @@ function axeSampleImg_ButtonDownFcn(hObject, ~, ~)
     handles.imgRaw = double(handles.imgRaw);
     handles.imgRaw = handles.imgRaw ./ 255;
     
-    handles = plotSample(handles.imgRaw, handles);
+    handles = plotSample(handles.imgRaw, handles, 'axeSampleImg');
     
     set(handles.cbCrop,'Enable','on');
     
@@ -272,7 +273,7 @@ end
 
 % Executes on click
 function cbCrop_Callback(hObject, ~, handles)
-    if ishandle(get(handles.axeSampleImg,'Children'))
+    if ishandle(get(handles.axeSampleImg,'Children'))  % Needs to be fixed?
         if get(hObject,'Value')
             % Enable crop textboxes
             set(handles.txtCropWidth,'Enable','on')
@@ -308,7 +309,11 @@ function cbCrop_Callback(hObject, ~, handles)
             [~,handles] = getBoxVal(handles.txtFrameVol,handles);
 
             % Plot cropped image
-            handles = plotSample(handles.imgRawCropped, handles);
+            if get(handles.tglStartPause,'Value')
+                handles = plotSample(handles.imgRawCropped, handles, 'axeRaw');
+            else
+                handles = plotSample(handles.imgRawCropped, handles, 'axeSampleImg');
+            end
         else
             set(handles.txtCropWidth,'Enable','off')
             set(handles.txtCropHeight,'Enable','off')
@@ -323,7 +328,11 @@ function cbCrop_Callback(hObject, ~, handles)
             set(handles.txtFrameVol,'String',handles.Param.txtFrameVol)
 
             % Plot cropped image
-            handles = plotSample(handles.imgRaw, handles);
+            if get(handles.tglStartPause,'Value')
+                handles = plotSample(handles.imgRaw, handles, 'axeRaw');
+            else
+                handles = plotSample(handles.imgRaw, handles, 'axeSampleImg');
+            end
         end
     end
     
@@ -340,14 +349,12 @@ function pnlSource_SelectionChangeFcn(hObject, eventdata, handles) %#ok<DEFNU>
             set(handles.txtExposure,'Enable','on')
             set(handles.sldGain,'Enable','on')
             set(handles.sldGamma,'Enable','on')
-            set(handles.tglContinuous,'Enable','on')
         case 'radFromFile'
             set(handles.txtGain,'Enable','off')
             set(handles.txtGamma,'Enable','off')
             set(handles.txtExposure,'Enable','off')
             set(handles.sldGain,'Enable','off')
             set(handles.sldGamma,'Enable','off')
-            set(handles.tglContinuous,'Enable','off')
     end
     
     % Update handles structure
@@ -491,6 +498,19 @@ function cbNormalize_Callback(hObject, ~, handles) %#ok<DEFNU>
     cbCrop_Callback(handles.cbCrop,[],handles);
 end
 
+%% Continuous Capture
+% Executes on button press in tglConfig.
+function tglConfig_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if get(hObject,'Value')
+        set(handles.tglContinuous,'Enable','on');
+    else
+        set(handles.tglContinuous,'Enable','off');
+        set(handles.tglContinuous,'Value',0);
+        guidata(hObject,handles);
+    end
+    guidata(hObject,handles);
+end
+
 %% Custom Functions
 % Initialization
 function handles = Initialize(handles)
@@ -515,6 +535,9 @@ function handles = Initialize(handles)
         handles.ParamC.(get(hList(i),'Tag')) = get(hList(i),'Value');
         handles.imgProcCB.(get(hList(i),'Tag')) = get(hList(i),'Value');
     end
+    
+    handles.Stats.GperL = {};
+    handles.Stats.Diameters = {};
     
     % Update handles structure
     guidata(handles.hmiConfig, handles);
@@ -541,11 +564,7 @@ function varargout = getBoxVal(varargin)
 end
 
 % Plots the sample image and the center point
-function handles = plotSample(imgSample, handles)
-    axes(handles.axeSampleImg);
-    cla;
-    hold on;
-    
+function handles = plotSample(imgRaw, handles, strAxis)
     % Create size of small/big particle in pixels
     imgMinParticle = fspecial('disk',getBoxVal(handles.txtMinDiam) / ...
                                      getBoxVal(handles.txtPixelLen)/2);
@@ -556,54 +575,70 @@ function handles = plotSample(imgSample, handles)
     
     % Image Processing
     if get(handles.cbNormalize,'Value')
-        imgSample = ProcessImage(imgSample,'Normalize');
+        imgRaw = ProcessImage(imgRaw,'Normalize');
     end
     if get(handles.cbBinary,'Value')
-        imgSample = ProcessImage(imgSample,'bw',getBoxVal(handles.txtThreshold));
+        imgRaw = ProcessImage(imgRaw,'bw',getBoxVal(handles.txtThreshold));
     end
     if get(handles.cbOutOfRange,'Value')
-        imgSample = ProcessImage(imgSample,'remOutOfRange',sum(imgMinParticle(:))*2,sum(imgMaxParticle(:))*2);
+        imgRaw = ProcessImage(imgRaw,'remOutOfRange',sum(imgMinParticle(:))*2,sum(imgMaxParticle(:))*2);
     end
     if get(handles.cbRemoveBorder,'Value')
-        imgSample = ProcessImage(imgSample,'remBorder');
+        imgRaw = ProcessImage(imgRaw,'remBorder');
     end
     if get(handles.cbRoundness,'Value')
-        imgSample = ProcessImage(imgSample,'Roundness',handles);
+        imgRaw = ProcessImage(imgRaw,'Roundness',handles);
     end
     if get(handles.cbFilterStatic,'Value')
-        imgSample = ProcessImage(imgSample,'Static', handles);
+        imgRaw = ProcessImage(imgRaw,'Static', handles);
     end
-    handles.imgProcessed = imgSample;
+    handles.imgProcessed = imgRaw;
+    
+    switch strAxis
+        case 'axeRaw'
+            axes(handles.axeRaw);
+            cla;
+            imshow(handles.imgRaw);
+            
+            axes(handles.axeProcessed);
+            cla;
+            imshow(handles.imgProcessed);
+        case 'axeSampleImg'
+            axes(handles.axeSampleImg);
+    
+            cla;
+            hold on;
+            
+            % Add size of small and big particle to image
+            sizMin = size(imgMinParticle);
+            sizMax = size(imgMaxParticle);
+            yOffset1 = floor(size(imgRaw,1)/20);
+            yOffset2 = yOffset1 + sizMin(1) + floor(size(imgRaw,1)/20);
+            minMaxExample = ones(yOffset2,sizMax(2));
+            minMaxExample(yOffset1:sizMin(1)+yOffset1-1, 1:sizMin(2)) = 1-imgMinParticle;
+            minMaxExample(yOffset2:sizMax(1)+yOffset2-1, 1:sizMax(2)) = 1-imgMaxParticle;
 
-    % Add size of small and big particle to image
-    sizMin = size(imgMinParticle);
-    sizMax = size(imgMaxParticle);
-    yOffset1 = floor(size(imgSample,1)/20);
-    yOffset2 = yOffset1 + sizMin(1) + floor(size(imgSample,1)/20);
-    minMaxExample = ones(yOffset2,sizMax(2));
-    minMaxExample(yOffset1:sizMin(1)+yOffset1-1, 1:sizMin(2)) = 1-imgMinParticle;
-    minMaxExample(yOffset2:sizMax(1)+yOffset2-1, 1:sizMax(2)) = 1-imgMaxParticle;
+            imshow(imgRaw);
+            imshow(minMaxExample);
 
-    imshow(imgSample);
-    imshow(minMaxExample);
+            text(sizMin(2)+10,sizMin(1)/2+yOffset1, ...
+                 'Min Particle Size', ...
+                 'Color',[1 0 0]);
+            text(sizMax(2)+10,sizMax(1)/2+yOffset2, ...
+                 'Max Particle Size', ...
+                 'Color',[1 0 0]);
     
-    text(sizMin(2)+10,sizMin(1)/2+yOffset1, ...
-         'Min Particle Size', ...
-         'Color',[1 0 0]);
-    text(sizMax(2)+10,sizMax(1)/2+yOffset2, ...
-         'Max Particle Size', ...
-         'Color',[1 0 0]);
+            intCenterX = getBoxVal(handles.txtCenterX);
+            intCenterY = getBoxVal(handles.txtCenterY);
+            handles.hScatter = scatter(intCenterX,intCenterY,'*r');
+            intTextY = intCenterY - size(imgRaw,1)/20;
+            handles.hText = text(intCenterX,intTextY,'Frame Center',...
+                                 'HorizontalAlignment','center',...
+                                 'Color',[1 0 0]);
     
-    intCenterX = getBoxVal(handles.txtCenterX);
-    intCenterY = getBoxVal(handles.txtCenterY);
-    handles.hScatter = scatter(intCenterX,intCenterY,'*r');
-    intTextY = intCenterY - size(imgSample,1)/20;
-    handles.hText = text(intCenterX,intTextY,'Frame Center',...
-                         'HorizontalAlignment','center',...
-                         'Color',[1 0 0]);
-    
-    % Set function handle of this function to plots (children)
-    set(get(handles.axeSampleImg,'Children'),'ButtonDownFcn',@axeSampleImg_ButtonDownFcn);
+            % Set function handle of this function to plots (children)
+            set(get(handles.axeSampleImg,'Children'),'ButtonDownFcn',@axeSampleImg_ButtonDownFcn);
+    end
 end
 
 function imgProcessed = ProcessImage(imgRaw, strProcess, varargin)
@@ -657,26 +692,129 @@ function handles = UpdateCBValues(handles, strCBTag, binValue)
 end
 
 %% Not Used
-% Executes on button press in btnConfig.
-function btnConfig_Callback(~, ~, ~) %#ok<DEFNU>
-    hmiConfig_CloseRequestFcn;
-end
 
 %% Work in progress
 
 
 % --- Executes on button press in tglContinuous.
-function tglContinuous_Callback(hObject, eventdata, handles)
-% Reset pause
-% resize window
-% Tic Toc
+function tglContinuous_Callback(hObject, ~, handles) %#ok<DEFNU>
+    intSize = get(handles.hmiConfig,'Position');
+    if get(hObject,'Value')
+        intSize(3) = 270;
+        set(handles.hmiConfig,'Position',intSize);
+        set(handles.pnlContinuous,'Visible','on')
+        set(handles.tglStartPause,'Visible','on','Value',0)
+    else
+        intSize(3) = 133;
+        set(handles.hmiConfig,'Position',intSize);
+        set(handles.pnlContinuous,'Visible','off')
+        set(handles.tglStartPause,'Visible','off')
+    end
+    
+    guidata(hObject,handles);
 end
 
-% --- Executes on button press in tglPause.
-function tglPause_Callback(hObject, eventdata, handles)
-% hObject    handle to tglPause (see GCBO)
+% --- Executes on button press in tglStartPause.
+function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if get(hObject,'Value')
+        set(hObject,'String','Pause');
+        if ~isfield(handles,'Time')
+            handles.Time = tic;
+        end
+        if ~isfield(handles,'Counter')
+            handles.Counter = 1;
+        end
+    end
+    
+    while (get(hObject,'Value'))
+        % Get image capture parameters
+        dblExposure = getBoxVal(handles.txtExposure);
+        dblGain = getBoxVal(handles.txtGain);
+        dblGamma = getBoxVal(handles.txtGamma);
+
+        handles.imgRaw = automated_frame_capture(dblExposure, dblGain, dblGamma);
+
+        if handles.imgRaw == -1
+            errordlg('Error while retrieving picture from camera')
+            return;
+        end
+    
+        % Set image to grayscale
+        if size(handles.imgRaw,3) == 3
+            handles.imgRaw = rgb2gray(handles.imgRaw);
+        end
+        handles.imgRaw = double(handles.imgRaw);
+        handles.imgRaw = handles.imgRaw ./ 255;
+        
+        guidata(hObject,handles);
+        cbCrop_Callback(handles.cbCrop,[],handles)
+        
+        handles = ProcImgStats(handles);
+        
+        PlotStats(handles)
+        
+        dblTime = toc(handles.Time);
+        strHour = num2str(floor(dblTime/3600));
+        strMin = num2str(floor(mod(dblTime,3600)/60));
+        strSec = num2str(floor(mod(dblTime,60)));
+        strTime = [strHour ':' strMin ':' strSec];
+        set(handles.txtTimeElapsed,'String',strTime);
+        
+        handles.Counter = handles.Counter + 1;
+
+        guidata(hObject,handles);
+    end
+
+    guidata(hObject,handles);
+end
+
+function handles = ProcImgStats(handles)
+    imgProcessed = ~handles.imgProcessed;
+    RProp = regionprops(imgProcessed, 'EquivDiameter');
+    
+    intSumVol = 0;
+    arrDiam = 0;
+    for i = 1:length(RProp)
+        intDiam = RProp(i).EquivDiameter * getBoxVal(handles.txtPixelLen);
+        intSumVol = intSumVol + 4/3*pi*(intDiam/2)^3;
+        
+        arrDiam(end) = intDiam;
+    end
+    
+    handles.Stats.GperL{mod(handles.Counter-1,500)+1} = ...
+            [handles.Counter,intSumVol / 1000^3 * ...
+            getBoxVal(handles.txtDensity) / ...
+            (getBoxVal(handles.txtFrameVol) / 10^3 / 1000)];
+    
+    intTime = clock;
+    strTime = sprintf('%u_%u_%u_%u_%u_%2.2f',intTime);
+    handles.Stats.Diameters{mod(handles.Counter-1,500)+1} = ...
+            {handles.Counter,strTime,arrDiam};
+end
+
+function PlotStats(handles)
+    axes(handles.axeGperL);
+    arrGperL = handles.Stats.GperL;
+    for i = 1:length(arrGperL)
+        intGperL(i,1) = arrGperL{i}(1);
+        intGperL(i,2) = arrGperL{i}(2);
+    end
+    line('XData',intGperL(:,1),'YData',intGperL(:,2));
+    
+    axes(handles.axeHist);
+    cla;
+    bins = histc(handles.Stats.Diameters{handles.Counter}{3},0:0.1:getBoxVal(handles.txtMaxDiam));
+    bar(0:0.1:getBoxVal(handles.txtMaxDiam),bins);
+end
+
+% --- Executes on slider movement.
+function sldHistorical_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+% hObject    handle to sldHistorical (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of tglPause
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 end
+
+
