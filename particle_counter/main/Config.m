@@ -26,7 +26,7 @@ function varargout = Config(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 26-Jun-2015 16:32:49
+    % Last Modified by GUIDE v2.5 26-Jun-2015 16:49:39
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -40,28 +40,28 @@ function varargout = Config(varargin)
         gui_State.gui_Callback = str2func(varargin{1});
     end
 
-%     try
+    try
         if nargout
             [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
         else
             gui_mainfcn(gui_State, varargin{:});
         end
-%     catch ERROR
-%         if ~isdir('ErrorLog')
-%             mkdir('ErrorLog')
-%         end
-%         logError = fopen('ErrorLog\ERROR.txt','a');
-% 
-%         strErrorTime = datestr(now);
-%         fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
-%                           '%-' int2str(length(ERROR.message)) 's\r\n'...
-%                           ],strErrorTime,ERROR.message);
-%         strErrorTime = regexprep(strErrorTime,':','');
-%         stcMemory = memory; %#ok<NASGU>
-%         save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
-% 
-%         fclose(logError);
-%     end
+    catch ERROR
+        if ~isdir('ErrorLog')
+            mkdir('ErrorLog')
+        end
+        logError = fopen('ErrorLog\ERROR.txt','a');
+
+        strErrorTime = datestr(now);
+        fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
+                          '%-' int2str(length(ERROR.message)) 's\r\n'...
+                          ],strErrorTime,ERROR.message);
+        strErrorTime = regexprep(strErrorTime,':','');
+        stcMemory = memory; %#ok<NASGU>
+        save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
+
+        fclose(logError);
+    end
 end
 % End initialization code - DO NOT EDIT
 
@@ -509,6 +509,222 @@ function tglConfig_Callback(hObject, ~, handles) %#ok<DEFNU>
     guidata(hObject,handles);
 end
 
+% Executes on button press in tglContinuous.
+function tglContinuous_Callback(hObject, ~, handles) %#ok<DEFNU>
+    intSize = get(handles.hmiConfig,'Position');
+    if get(hObject,'Value')
+        intSize(3) = 270;
+        set(handles.hmiConfig,'Position',intSize);
+        set(handles.pnlContinuous,'Visible','on')
+        set(handles.tglStartPause,'Visible','on','Value',0)
+    else
+        intSize(3) = 133;
+        set(handles.hmiConfig,'Position',intSize);
+        set(handles.pnlContinuous,'Visible','off')
+        set(handles.tglStartPause,'Visible','off')
+    end
+    
+    guidata(hObject,handles);
+end
+
+% Executes on button press in tglStartPause.
+function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
+    hList = findobj('Parent',handles.pnlContinuous,'Style','checkbox');
+
+    if get(hObject,'Value')
+        set(hObject,'String','Pause');
+        if ~isfield(handles,'Time')
+            handles.Time = tic;
+        end
+        if ~isfield(handles,'Counter')
+            handles.Counter = 1;
+        end
+        
+        set(hList,'Enable','off');
+        set(handles.sldHistorical,'Visible','off');
+    else
+        set(hObject,'String','Start');
+        set(hList,'Enable','on');
+        set(handles.sldHistorical,'Visible','on');
+        if ishandle(get(handles.axeGperL,'Children'))
+            set(handles.btnReview,'Visible','on');
+        end
+    end
+    
+    intTime = clock;
+    strTimeFile = sprintf('%u_%u_%u_%u_%u_%2.2f',intTime);
+    
+    while (get(hObject,'Value'))
+        if isfield(handles,'imgRaw')
+            handles.imgCompare = handles.imgRaw;
+            set(handles.cbFilterStatic,'Enable','on');
+        end
+        Get image capture parameters
+        dblExposure = getBoxVal(handles.txtExposure);
+        dblGain = getBoxVal(handles.txtGain);
+        dblGamma = getBoxVal(handles.txtGamma);
+
+        handles.imgRaw = automated_frame_capture(dblExposure, dblGain, dblGamma);
+
+        if handles.imgRaw == -1
+            errordlg('Error while retrieving picture from camera')
+            return;
+        end
+%         handles.imgRaw = imread(['D:\Users\Kepstrum\Desktop\Test\' num2str(mod(handles.Counter-1,3)+1) '.jpg']);
+    
+        % Set image to grayscale
+        if size(handles.imgRaw,3) == 3
+            handles.imgRaw = rgb2gray(handles.imgRaw);
+        end
+        handles.imgRaw = double(handles.imgRaw);
+        handles.imgRaw = handles.imgRaw ./ 255;
+        
+        handles = cbCrop_Callback(handles.cbCrop,[],handles);
+        guidata(hObject,handles);
+        
+        handles = ProcImgStats(handles);
+        
+        PlotStats(handles)
+        
+        dblTime = toc(handles.Time);
+        strHour = num2str(floor(dblTime/3600));
+        strMin = num2str(floor(mod(dblTime,3600)/60));
+        strSec = num2str(floor(mod(dblTime,60)));
+        strTime = [strHour ':' strMin ':' strSec];
+        set(handles.txtTimeElapsed,'String',strTime);
+        
+        set(handles.sldHistorical,'Max',handles.Counter,'Value',handles.Counter);
+        
+        if ~isdir('Saved Data')
+            mkdir('Saved Data')
+        end
+        dirSave = ['Saved Data\' strTimeFile '\'];
+        handles.dirSave = dirSave;
+        if ~isdir(dirSave)
+            mkdir(dirSave)
+        end
+        if get(handles.cbSaveRaw, 'Value')
+            imwrite(handles.imgRaw,[dirSave int2str(handles.Counter) 'Raw.png'],'png');
+            if get(handles.cbCrop, 'Value')
+                imwrite(handles.imgRaw,[dirSave int2str(handles.Counter) 'RawCropped.png'],'png');
+            end
+        end
+        if get(handles.cbSaveProcessed, 'Value')
+            imwrite(handles.imgProcessed,[dirSave int2str(handles.Counter) 'Processed.png'],'png');
+        end
+        if get(handles.cbSaveGperL, 'Value')
+            fidGperL = fopen([dirSave 'GramsPerLiter.txt'], 'a');
+            if handles.Counter == 1
+                fprintf(fidGperL,'%s,%s','Index','Grams/Liter');
+            end
+            fprintf(fidGperL,'%d,%2.2f',handles.Stats.GperL{handles.Counter}(1),handles.Stats.GperL{handles.Counter}(2));
+            fclose(fidGperL);
+        end
+        if get(handles.cbSaveHist, 'Value')
+            savVar = handles.Stats.Diameters{handles.Counter}; %#ok<NASGU>
+            save([dirSave int2str(handles.Counter) 'Hist'], 'savVar');
+        end
+        
+        handles.Counter = handles.Counter + 1;
+
+        guidata(hObject,handles);
+    end
+
+    guidata(hObject,handles);
+end
+
+% Executes on slider movement.
+function sldHistorical_Callback(hObject, ~, handles) %#ok<DEFNU>
+    axes(handles.axeGperL);
+    intSlider = get(hObject,'Value');
+    if (intSlider - 10) > 0
+        xlim([intSlider - 10, intSlider]);
+    else
+        xlim([1, 10]);
+    end
+    
+    guidata(hObject,handles);
+end
+
+% Executes on button press in cbSaveRaw.
+function cbSaveRaw_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if get(hObject,'Value')
+        hList = findobj('Parent',handles.pnlContinuous,'Type','checkbox');
+        if sum(cell2mat(get(hList,'Value'))) == 4
+            set(handles.sldHistorical,'Visible','on');
+        end
+    else
+        set(handles.sldHistorical,'Visible','off');
+    end
+
+    guidata(hObject,handles);
+end
+
+% Executes on button press in cbSaveProcessed.
+function cbSaveProcessed_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if get(hObject,'Value')
+        hList = findobj('Parent',handles.pnlContinuous,'Type','checkbox');
+        if sum(cell2mat(get(hList,'Value'))) == 4
+            set(handles.sldHistorical,'Visible','on');
+        end
+    else
+        set(handles.sldHistorical,'Visible','off');
+    end
+
+    guidata(hObject,handles);
+end
+
+% Executes on button press in cbSaveGperL.
+function cbSaveGperL_Callback(hObject, ~, handles) %#ok<DEFNU>
+    set(hObject,'Value',floor(get(hObject,'Value')))
+
+    if get(hObject,'Value')
+        hList = findobj('Parent',handles.pnlContinuous,'Type','checkbox');
+        if sum(cell2mat(get(hList,'Value'))) == 4
+            set(handles.sldHistorical,'Visible','on');
+        end
+    else
+        set(handles.sldHistorical,'Visible','off');
+    end
+
+    guidata(hObject,handles);
+end
+
+% Executes on button press in cbSaveHist.
+function cbSaveHist_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if get(hObject,'Value')
+        hList = findobj('Parent',handles.pnlContinuous,'Style','checkbox');
+        if sum(cell2mat(get(hList,'Value'))) == 4
+            set(handles.sldHistorical,'Visible','on');
+        end
+    else
+        set(handles.sldHistorical,'Visible','off');
+    end
+
+    guidata(hObject,handles);
+end
+
+% Executes on button press in btnReview.
+function btnReview_Callback(hObject, ~, handles) %#ok<DEFNU>
+    [x,~] = ginput(1);
+    if exist([handles.dirSave int2str(round(x)) 'RawCropped.png'], 'file')
+        imgRaw = imread([handles.dirSave int2str(round(x)) 'RawCropped.png']);
+    else
+        imgRaw = imread([handles.dirSave int2str(round(x)) 'Raw.png']);
+    end
+    imgProcessed = imread([handles.dirSave int2str(round(x)) 'Processed.png']);
+    stcHist = load([handles.dirSave int2str(round(x)) 'Hist.mat'],'savVar');
+    stcHist = stcHist.savVar;
+    
+    axes(handles.axeRaw);
+    imshow(imgRaw);
+    axes(handles.axeProcessed);
+    imshow(imgProcessed);
+    PlotStats(handles,stcHist);
+    
+    guidata(hObject,handles);
+end
+
 %% Custom Functions
 % Initialization
 function handles = Initialize(handles)
@@ -640,6 +856,7 @@ function handles = plotSample(imgShow, handles, strAxis)
     end
 end
 
+% Image processing functions
 function imgProcessed = ProcessImage(imgRaw, strProcess, varargin)
     switch strProcess
         case 'Normalize'
@@ -684,141 +901,14 @@ function imgProcessed = ProcessImage(imgRaw, strProcess, varargin)
     end
 end
 
+% Update checkbox values to handles
 function handles = UpdateCBValues(handles, strCBTag, binValue)
     handles.Param.(strCBTag) = binValue;
     handles.ParamC.(strCBTag) = binValue;
     handles.imgProcCB.(strCBTag) = binValue;
 end
 
-%% Not Used
-
-%% Work in progress
-
-
-% --- Executes on button press in tglContinuous.
-function tglContinuous_Callback(hObject, ~, handles) %#ok<DEFNU>
-    intSize = get(handles.hmiConfig,'Position');
-    if get(hObject,'Value')
-        intSize(3) = 270;
-        set(handles.hmiConfig,'Position',intSize);
-        set(handles.pnlContinuous,'Visible','on')
-        set(handles.tglStartPause,'Visible','on','Value',0)
-    else
-        intSize(3) = 133;
-        set(handles.hmiConfig,'Position',intSize);
-        set(handles.pnlContinuous,'Visible','off')
-        set(handles.tglStartPause,'Visible','off')
-    end
-    
-    guidata(hObject,handles);
-end
-
-% --- Executes on button press in tglStartPause.
-function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
-    hList = findobj('Parent',handles.pnlContinuous,'Style','checkbox');
-
-    if get(hObject,'Value')
-        set(hObject,'String','Pause');
-        if ~isfield(handles,'Time')
-            handles.Time = tic;
-        end
-        if ~isfield(handles,'Counter')
-            handles.Counter = 1;
-        end
-        
-        set(hList,'Enable','off');
-        set(handles.sldHistorical,'Visible','off');
-    else
-        set(hObject,'String','Start');
-        set(hList,'Enable','on');
-        set(handles.sldHistorical,'Visible','on');
-        if ishandle(get(handles.axeGperL,'Children'))
-            set(handles.btnReview,'Visible','on');
-        end
-    end
-    
-    intTime = clock;
-    strTimeFile = sprintf('%u_%u_%u_%u_%u_%2.2f',intTime);
-    
-    while (get(hObject,'Value'))
-        if isfield(handles,'imgRaw')
-            handles.imgCompare = handles.imgRaw;
-            set(handles.cbFilterStatic,'Enable','on');
-        end
-        % Get image capture parameters
-%         dblExposure = getBoxVal(handles.txtExposure);
-%         dblGain = getBoxVal(handles.txtGain);
-%         dblGamma = getBoxVal(handles.txtGamma);
-% 
-%         handles.imgRaw = automated_frame_capture(dblExposure, dblGain, dblGamma);
-% 
-%         if handles.imgRaw == -1
-%             errordlg('Error while retrieving picture from camera')
-%             return;
-%         end
-        handles.imgRaw = imread(['D:\Users\Kepstrum\Desktop\Test\' num2str(mod(handles.Counter-1,3)+1) '.jpg']);
-    
-        % Set image to grayscale
-        if size(handles.imgRaw,3) == 3
-            handles.imgRaw = rgb2gray(handles.imgRaw);
-        end
-        handles.imgRaw = double(handles.imgRaw);
-        handles.imgRaw = handles.imgRaw ./ 255;
-        
-        handles = cbCrop_Callback(handles.cbCrop,[],handles);
-        guidata(hObject,handles);
-        
-        handles = ProcImgStats(handles);
-        
-        PlotStats(handles)
-        
-        dblTime = toc(handles.Time);
-        strHour = num2str(floor(dblTime/3600));
-        strMin = num2str(floor(mod(dblTime,3600)/60));
-        strSec = num2str(floor(mod(dblTime,60)));
-        strTime = [strHour ':' strMin ':' strSec];
-        set(handles.txtTimeElapsed,'String',strTime);
-        
-        set(handles.sldHistorical,'Max',handles.Counter,'Value',handles.Counter);
-        
-        if ~isdir('Saved Data')
-            mkdir('Saved Data')
-        end
-        dirSave = ['Saved Data\' strTimeFile '\'];
-        handles.dirSave = dirSave;
-        if ~isdir(dirSave)
-            mkdir(dirSave)
-        end
-        if get(handles.cbSaveRaw, 'Value')
-            imwrite(handles.imgRaw,[dirSave int2str(handles.Counter) 'Raw.png'],'png');
-            if get(handles.cbCrop, 'Value')
-                imwrite(handles.imgRaw,[dirSave int2str(handles.Counter) 'RawCropped.png'],'png');
-            end
-        end
-        if get(handles.cbSaveProcessed, 'Value')
-            imwrite(handles.imgProcessed,[dirSave int2str(handles.Counter) 'Processed.png'],'png');
-        end
-        if get(handles.cbSaveGperL, 'Value')
-            fidGperL = fopen([dirSave 'GramsPerLiter.txt'], 'a');
-            if handles.Counter == 1
-                fprintf(fidGperL,'%s,%s','Index','Grams/Liter');
-            end
-            fprintf(fidGperL,'%d,%2.2f',handles.Stats.GperL{handles.Counter}(1),handles.Stats.GperL{handles.Counter}(2));
-            fclose(fidGperL);
-        end
-        if get(handles.cbSaveHist, 'Value')
-            savVar = handles.Stats.Diameters{handles.Counter}; %#ok<NASGU>
-            save([dirSave int2str(handles.Counter) 'Hist'], 'savVar');
-        end
-        
-        handles.Counter = handles.Counter + 1;
-
-        guidata(hObject,handles);
-    end
-
-    guidata(hObject,handles);
-end
-
+% Get processed image statistics
 function handles = ProcImgStats(handles)
     imgProcessed = ~handles.imgProcessed;
     RProp = regionprops(imgProcessed, 'EquivDiameter');
@@ -843,6 +933,7 @@ function handles = ProcImgStats(handles)
             {handles.Counter,strTime,arrDiam};
 end
 
+% Plot image statistics
 function PlotStats(varargin)
     handles = varargin{1};
     axes(handles.axeGperL);
@@ -872,102 +963,7 @@ function PlotStats(varargin)
     xlim([0, dblMaxDiam]);
 end
 
-% --- Executes on slider movement.
-function sldHistorical_Callback(hObject, ~, handles) %#ok<DEFNU>
-    axes(handles.axeGperL);
-    intSlider = get(hObject,'Value');
-    if (intSlider - 10) > 0
-        xlim([intSlider - 10, intSlider]);
-    else
-        xlim([1, 10]);
-    end
-    
-    guidata(hObject,handles);
-end
-
-
-% --- Executes on button press in cbSaveRaw.
-function cbSaveRaw_Callback(hObject, ~, handles) %#ok<DEFNU>
-    if get(hObject,'Value')
-        hList = findobj('Parent',handles.pnlContinuous,'Type','checkbox');
-        if sum(cell2mat(get(hList,'Value'))) == 4
-            set(handles.sldHistorical,'Visible','on');
-        end
-    else
-        set(handles.sldHistorical,'Visible','off');
-    end
-
-    guidata(hObject,handles);
-end
-
-% --- Executes on button press in cbSaveProcessed.
-function cbSaveProcessed_Callback(hObject, ~, handles) %#ok<DEFNU>
-    if get(hObject,'Value')
-        hList = findobj('Parent',handles.pnlContinuous,'Type','checkbox');
-        if sum(cell2mat(get(hList,'Value'))) == 4
-            set(handles.sldHistorical,'Visible','on');
-        end
-    else
-        set(handles.sldHistorical,'Visible','off');
-    end
-
-    guidata(hObject,handles);
-end
-
-% --- Executes on button press in cbSaveGperL.
-function cbSaveGperL_Callback(hObject, ~, handles) %#ok<DEFNU>
-    set(hObject,'Value',floor(get(hObject,'Value')))
-
-    if get(hObject,'Value')
-        hList = findobj('Parent',handles.pnlContinuous,'Type','checkbox');
-        if sum(cell2mat(get(hList,'Value'))) == 4
-            set(handles.sldHistorical,'Visible','on');
-        end
-    else
-        set(handles.sldHistorical,'Visible','off');
-    end
-
-    guidata(hObject,handles);
-end
-
-% --- Executes on button press in cbSaveHist.
-function cbSaveHist_Callback(hObject, ~, handles) %#ok<DEFNU>
-    if get(hObject,'Value')
-        hList = findobj('Parent',handles.pnlContinuous,'Style','checkbox');
-        if sum(cell2mat(get(hList,'Value'))) == 4
-            set(handles.sldHistorical,'Visible','on');
-        end
-    else
-        set(handles.sldHistorical,'Visible','off');
-    end
-
-    guidata(hObject,handles);
-end
-
-
-% --- Executes on button press in btnReview.
-function btnReview_Callback(hObject, ~, handles) %#ok<DEFNU>
-    [x,~] = ginput(1);
-    if exist([handles.dirSave int2str(round(x)) 'RawCropped.png'], 'file')
-        imgRaw = imread([handles.dirSave int2str(round(x)) 'RawCropped.png']);
-    else
-        imgRaw = imread([handles.dirSave int2str(round(x)) 'Raw.png']);
-    end
-    imgProcessed = imread([handles.dirSave int2str(round(x)) 'Processed.png']);
-    stcHist = load([handles.dirSave int2str(round(x)) 'Hist.mat'],'savVar');
-    stcHist = stcHist.savVar;
-    
-    axes(handles.axeRaw);
-    imshow(imgRaw);
-    axes(handles.axeProcessed);
-    imshow(imgProcessed);
-    PlotStats(handles,stcHist);
-    
-    guidata(hObject,handles);
-end
-
-
-
+%% Not Used
 function txtMovAvg_Callback(hObject, ~, handles) %#ok<DEFNU>
     set(handles.sldGain,'Value',getBoxVal(hObject));
     
@@ -975,3 +971,5 @@ function txtMovAvg_Callback(hObject, ~, handles) %#ok<DEFNU>
     [~,handles] = getBoxVal(hObject,handles);
     guidata(hObject, handles);
 end
+
+%% Work in progress
