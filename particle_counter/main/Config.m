@@ -26,7 +26,7 @@ function varargout = Config(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 26-Jun-2015 08:27:46
+    % Last Modified by GUIDE v2.5 26-Jun-2015 11:49:43
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -784,7 +784,7 @@ function handles = ProcImgStats(handles)
         dblDiam = RProp(i).EquivDiameter * getBoxVal(handles.txtPixelLen);
         intSumVol = intSumVol + 4/3*pi*(dblDiam/2)^3;
         
-        arrDiam(end+1) = dblDiam;
+        arrDiam(end+1) = dblDiam; %#ok<AGROW>
     end
     
     handles.Stats.GperL{mod(handles.Counter-1,500)+1} = ...
@@ -802,18 +802,24 @@ function PlotStats(handles)
     axes(handles.axeGperL);
     arrGperL = handles.Stats.GperL;
     for i = 1:length(arrGperL)
-        intGperL(i,1) = arrGperL{i}(1);
-        intGperL(i,2) = arrGperL{i}(2);
+        intGperL(i,1) = arrGperL{i}(1); %#ok<AGROW>
+        intGperL(i,2) = arrGperL{i}(2); %#ok<AGROW>
     end
     plot(intGperL(:,1),intGperL(:,2));
     xlabel('Image #');
     ylabel('Grams/Liter');
     xlim([handles.Counter - 10, handles.Counter]);
     
+    set(handles.sldHistorical,'Max',handles.Counter);
+    
     axes(handles.axeHist);
     cla;
-    bins = histc(handles.Stats.Diameters{handles.Counter}{3},0:0.1:getBoxVal(handles.txtMaxDiam));
-    bar(0:0.1:getBoxVal(handles.txtMaxDiam),bins);
+    dblMaxDiam = getBoxVal(handles.txtMaxDiam);
+    bins = histc(handles.Stats.Diameters{handles.Counter}{3},0:0.1:dblMaxDiam);
+    bar(0:0.1:dblMaxDiam,bins);
+    xlabel('Count');
+    ylabel('Particle Diameter [mm]');
+    xlim([0, dblMaxDiam]);
 end
 
 % --- Executes on slider movement.
@@ -824,4 +830,61 @@ function sldHistorical_Callback(hObject, eventdata, handles) %#ok<DEFNU>
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+end
+
+
+% --- Executes on button press in cbSaveRaw.
+function cbSaveRaw_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if get(hObject,'Value')
+        hList = findobj('Parent',handles.pnlContinuous,'Type','checkbox');
+        if sum(cell2mat(get(hList,'Value'))) == 4
+            set(handles.sldHistorical,'Visible','on');
+        end
+    else
+        set(handles.sldHistorical,'Visible','off');
+    end
+
+    guidata(hObject,handles);
+end
+
+% --- Executes on button press in cbSaveProcessed.
+function cbSaveProcessed_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if get(hObject,'Value')
+        hList = findobj('Parent',handles.pnlContinuous,'Type','checkbox');
+        if sum(cell2mat(get(hList,'Value'))) == 4
+            set(handles.sldHistorical,'Visible','on');
+        end
+    else
+        set(handles.sldHistorical,'Visible','off');
+    end
+
+    guidata(hObject,handles);
+end
+
+% --- Executes on button press in cbSaveGperL.
+function cbSaveGperL_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if get(hObject,'Value')
+        hList = findobj('Parent',handles.pnlContinuous,'Type','checkbox');
+        if sum(cell2mat(get(hList,'Value'))) == 4
+            set(handles.sldHistorical,'Visible','on');
+        end
+    else
+        set(handles.sldHistorical,'Visible','off');
+    end
+
+    guidata(hObject,handles);
+end
+
+% --- Executes on button press in cbSaveHist.
+function cbSaveHist_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if get(hObject,'Value')
+        hList = findobj('Parent',handles.pnlContinuous,'Style','checkbox');
+        if sum(cell2mat(get(hList,'Value'))) == 4
+            set(handles.sldHistorical,'Visible','on');
+        end
+    else
+        set(handles.sldHistorical,'Visible','off');
+    end
+
+    guidata(hObject,handles);
 end
