@@ -26,7 +26,7 @@ function varargout = Config(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 26-Jun-2015 11:49:43
+    % Last Modified by GUIDE v2.5 26-Jun-2015 15:04:28
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -815,11 +815,13 @@ function PlotStats(handles)
     axes(handles.axeHist);
     cla;
     dblMaxDiam = getBoxVal(handles.txtMaxDiam);
-    bins = histc(handles.Stats.Diameters{handles.Counter}{3},0:0.1:dblMaxDiam);
-    bar(0:0.1:dblMaxDiam,bins);
+    MaxHistCenter = (ceil(dblMaxDiam * 10) - 0.5) / 10;
+    HistCenter = 0.05 : 0.1 : MaxHistCenter;
+    bins = histc(handles.Stats.Diameters{handles.Counter}{3}, HistCenter);
+    bar(HistCenter, bins);
     xlabel('Count');
     ylabel('Particle Diameter [mm]');
-    xlim([0, dblMaxDiam]);
+    xlim([0, MaxHistCenter + 0.05]);
 end
 
 % --- Executes on slider movement.
