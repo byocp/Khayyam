@@ -1,5 +1,4 @@
 %% Notes
-% Add histogram/g/L output charts
 % Add output file?
 
 %% Main GUI Functions
@@ -27,7 +26,7 @@ function varargout = Config(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 26-Jun-2015 04:23:08
+    % Last Modified by GUIDE v2.5 26-Jun-2015 08:27:46
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -41,28 +40,28 @@ function varargout = Config(varargin)
         gui_State.gui_Callback = str2func(varargin{1});
     end
 
-%     try
+    try
         if nargout
             [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
         else
             gui_mainfcn(gui_State, varargin{:});
         end
-%     catch ERROR
-%         if ~isdir('ErrorLog')
-%             mkdir('ErrorLog')
-%         end
-%         logError = fopen('ErrorLog\ERROR.txt','a');
-% 
-%         strErrorTime = datestr(now);
-%         fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
-%                           '%-' int2str(length(ERROR.message)) 's\r\n'...
-%                           ],strErrorTime,ERROR.message);
-%         strErrorTime = regexprep(strErrorTime,':','');
-%         stcMemory = memory; %#ok<NASGU>
-%         save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
-% 
-%         fclose(logError);
-%     end
+    catch ERROR
+        if ~isdir('ErrorLog')
+            mkdir('ErrorLog')
+        end
+        logError = fopen('ErrorLog\ERROR.txt','a');
+
+        strErrorTime = datestr(now);
+        fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
+                          '%-' int2str(length(ERROR.message)) 's\r\n'...
+                          ],strErrorTime,ERROR.message);
+        strErrorTime = regexprep(strErrorTime,':','');
+        stcMemory = memory; %#ok<NASGU>
+        save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
+
+        fclose(logError);
+    end
 end
 % End initialization code - DO NOT EDIT
 
@@ -163,7 +162,7 @@ end
 function txtThreshold_Callback(hObject, ~, handles) %#ok<DEFNU>
     set(handles.sldThreshold,'Value',getBoxVal(hObject));
 
-    cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
@@ -174,16 +173,16 @@ end
 function txtCropWidth_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
+    handles = cbCrop_Callback(handles.cbCrop, [], handles);
     guidata(hObject, handles);
-    cbCrop_Callback(handles.cbCrop, [], handles)
 end
 
 % Executes when Enter or Tab is pressed
 function txtCropHeight_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
+    handles = cbCrop_Callback(handles.cbCrop, [], handles);
     guidata(hObject, handles);
-    cbCrop_Callback(handles.cbCrop, [], handles)
 end
 
 %% Image Settings (Sliders)
@@ -209,7 +208,7 @@ end
 function sldThreshold_Callback(hObject, ~, handles) %#ok<DEFNU>
     set(handles.txtThreshold,'String',get(hObject,'Value'));
     
-    cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     
     % Update handles structure
     [~,handles] = getBoxVal(handles.txtThreshold,handles);
@@ -267,12 +266,12 @@ function axeSampleImg_ButtonDownFcn(hObject, ~, ~)
     set(handles.cbCrop,'Enable','on');
     
     % Update handles structure
+    handles = cbCrop_Callback(handles.cbCrop, [], handles);
     guidata(handles.axeSampleImg, handles);
-    cbCrop_Callback(handles.cbCrop, [], handles)
 end
 
 % Executes on click
-function cbCrop_Callback(hObject, ~, handles)
+function handles = cbCrop_Callback(hObject, ~, handles)
     if ishandle(get(handles.axeSampleImg,'Children'))  % Needs to be fixed?
         if get(hObject,'Value')
             % Enable crop textboxes
@@ -393,17 +392,16 @@ function txtPixelLen_Callback(hObject, ~, handles) %#ok<DEFNU>
     [~,handles] = getBoxVal(handles.txtFrameWidth,handles);
     [~,handles] = getBoxVal(handles.txtFrameHeight,handles);
     [~,handles] = getBoxVal(handles.txtFrameVol,handles);
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     guidata(hObject, handles);
-    
-    cbCrop_Callback(handles.cbCrop,[],handles);
 end
 
 %% Image Processing Options
 % Executes on click
 function cbOutOfRange_Callback(hObject, ~, handles) %#ok<DEFNU>
     handles = UpdateCBValues(handles, 'cbOutOfRange', get(hObject,'Value'));
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     guidata(hObject,handles);
-    cbCrop_Callback(handles.cbCrop,[],handles);
 end
 
 % Executes on click
@@ -426,15 +424,15 @@ function cbBinary_Callback(hObject, ~, handles) %#ok<DEFNU>
     end
     
     handles = UpdateCBValues(handles, 'cbBinary', get(hObject,'Value'));
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     guidata(hObject,handles);
-    cbCrop_Callback(handles.cbCrop,[],handles);
 end
 
 % Executes on click
 function cbRemoveBorder_Callback(hObject, ~, handles) %#ok<DEFNU>
     handles = UpdateCBValues(handles, 'cbRemoveBorder', get(hObject,'Value'));
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     guidata(hObject,handles);
-    cbCrop_Callback(handles.cbCrop,[],handles);
 end
 
 % Executes on click
@@ -448,54 +446,54 @@ function cbRoundness_Callback(hObject, ~, handles) %#ok<DEFNU>
     end
     
     handles = UpdateCBValues(handles, 'cbRoundness', get(hObject,'Value'));
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     guidata(hObject,handles);
-    cbCrop_Callback(handles.cbCrop,[],handles);
 end
 
 % Executes when Enter or Tab is pressed
 function txtRoundHigh_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     guidata(hObject, handles);
-    cbCrop_Callback(handles.cbCrop, [], handles)
 end
 
 % Executes when Enter or Tab is pressed
 function txtRoundLow_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     guidata(hObject, handles);
-    cbCrop_Callback(handles.cbCrop, [], handles)
 end
 
 % Executes when Enter or Tab is pressed
 function txtMinDiam_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     guidata(hObject, handles);
-    cbCrop_Callback(handles.cbCrop, [], handles)
 end
 
 % Executes when Enter or Tab is pressed
 function txtMaxDiam_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Update handles structure
     [~,handles] = getBoxVal(hObject,handles);
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     guidata(hObject, handles);
-    cbCrop_Callback(handles.cbCrop, [], handles)
 end
 
 % Executes on click
 function cbFilterStatic_Callback(hObject, ~, handles) %#ok<DEFNU>
     handles = UpdateCBValues(handles, 'cbFilterStatic', get(hObject,'Value'));
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     guidata(hObject,handles);
-    cbCrop_Callback(handles.cbCrop,[],handles);
 end
 
 % Executes on click
 function cbNormalize_Callback(hObject, ~, handles) %#ok<DEFNU>
     handles = UpdateCBValues(handles, 'cbNormalize', get(hObject,'Value'));
+    handles = cbCrop_Callback(handles.cbCrop,[],handles);
     guidata(hObject,handles);
-    cbCrop_Callback(handles.cbCrop,[],handles);
 end
 
 %% Continuous Capture
@@ -564,7 +562,7 @@ function varargout = getBoxVal(varargin)
 end
 
 % Plots the sample image and the center point
-function handles = plotSample(imgRaw, handles, strAxis)
+function handles = plotSample(imgShow, handles, strAxis)
     % Create size of small/big particle in pixels
     imgMinParticle = fspecial('disk',getBoxVal(handles.txtMinDiam) / ...
                                      getBoxVal(handles.txtPixelLen)/2);
@@ -573,32 +571,33 @@ function handles = plotSample(imgRaw, handles, strAxis)
                                      getBoxVal(handles.txtPixelLen)/2);
     imgMaxParticle(imgMaxParticle>0) = 0.5;
     
+    imgRaw = imgShow;
     % Image Processing
     if get(handles.cbNormalize,'Value')
-        imgRaw = ProcessImage(imgRaw,'Normalize');
+        imgShow = ProcessImage(imgShow,'Normalize');
     end
     if get(handles.cbBinary,'Value')
-        imgRaw = ProcessImage(imgRaw,'bw',getBoxVal(handles.txtThreshold));
+        imgShow = ProcessImage(imgShow,'bw',getBoxVal(handles.txtThreshold));
     end
     if get(handles.cbOutOfRange,'Value')
-        imgRaw = ProcessImage(imgRaw,'remOutOfRange',sum(imgMinParticle(:))*2,sum(imgMaxParticle(:))*2);
+        imgShow = ProcessImage(imgShow,'remOutOfRange',sum(imgMinParticle(:))*2,sum(imgMaxParticle(:))*2);
     end
     if get(handles.cbRemoveBorder,'Value')
-        imgRaw = ProcessImage(imgRaw,'remBorder');
+        imgShow = ProcessImage(imgShow,'remBorder');
     end
     if get(handles.cbRoundness,'Value')
-        imgRaw = ProcessImage(imgRaw,'Roundness',handles);
+        imgShow = ProcessImage(imgShow,'Roundness',handles);
     end
     if get(handles.cbFilterStatic,'Value')
-        imgRaw = ProcessImage(imgRaw,'Static', handles);
+        imgShow = ProcessImage(imgShow,'Static', handles);
     end
-    handles.imgProcessed = imgRaw;
+    handles.imgProcessed = imgShow;
     
     switch strAxis
         case 'axeRaw'
             axes(handles.axeRaw);
             cla;
-            imshow(handles.imgRaw);
+            imshow(imgRaw);
             
             axes(handles.axeProcessed);
             cla;
@@ -612,13 +611,13 @@ function handles = plotSample(imgRaw, handles, strAxis)
             % Add size of small and big particle to image
             sizMin = size(imgMinParticle);
             sizMax = size(imgMaxParticle);
-            yOffset1 = floor(size(imgRaw,1)/20);
-            yOffset2 = yOffset1 + sizMin(1) + floor(size(imgRaw,1)/20);
+            yOffset1 = floor(size(imgShow,1)/20);
+            yOffset2 = yOffset1 + sizMin(1) + floor(size(imgShow,1)/20);
             minMaxExample = ones(yOffset2,sizMax(2));
             minMaxExample(yOffset1:sizMin(1)+yOffset1-1, 1:sizMin(2)) = 1-imgMinParticle;
             minMaxExample(yOffset2:sizMax(1)+yOffset2-1, 1:sizMax(2)) = 1-imgMaxParticle;
 
-            imshow(imgRaw);
+            imshow(imgShow);
             imshow(minMaxExample);
 
             text(sizMin(2)+10,sizMin(1)/2+yOffset1, ...
@@ -631,7 +630,7 @@ function handles = plotSample(imgRaw, handles, strAxis)
             intCenterX = getBoxVal(handles.txtCenterX);
             intCenterY = getBoxVal(handles.txtCenterY);
             handles.hScatter = scatter(intCenterX,intCenterY,'*r');
-            intTextY = intCenterY - size(imgRaw,1)/20;
+            intTextY = intCenterY - size(imgShow,1)/20;
             handles.hText = text(intCenterX,intTextY,'Frame Center',...
                                  'HorizontalAlignment','center',...
                                  'Color',[1 0 0]);
@@ -724,9 +723,15 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
         if ~isfield(handles,'Counter')
             handles.Counter = 1;
         end
+    else
+        set(hObject,'String','Start');
     end
     
     while (get(hObject,'Value'))
+        if isfield(handles,'imgRaw')
+            handles.imgCompare = handles.imgRaw;
+            set(handles.cbFilterStatic,'Enable','on');
+        end
         % Get image capture parameters
         dblExposure = getBoxVal(handles.txtExposure);
         dblGain = getBoxVal(handles.txtGain);
@@ -738,6 +743,7 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
             errordlg('Error while retrieving picture from camera')
             return;
         end
+%         handles.imgRaw = imread(['D:\Users\Kepstrum\Desktop\Test\' num2str(mod(handles.Counter-1,3)+1) '.jpg']);
     
         % Set image to grayscale
         if size(handles.imgRaw,3) == 3
@@ -746,8 +752,8 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
         handles.imgRaw = double(handles.imgRaw);
         handles.imgRaw = handles.imgRaw ./ 255;
         
+        handles = cbCrop_Callback(handles.cbCrop,[],handles);
         guidata(hObject,handles);
-        cbCrop_Callback(handles.cbCrop,[],handles)
         
         handles = ProcImgStats(handles);
         
@@ -773,12 +779,12 @@ function handles = ProcImgStats(handles)
     RProp = regionprops(imgProcessed, 'EquivDiameter');
     
     intSumVol = 0;
-    arrDiam = 0;
+    arrDiam = [];
     for i = 1:length(RProp)
-        intDiam = RProp(i).EquivDiameter * getBoxVal(handles.txtPixelLen);
-        intSumVol = intSumVol + 4/3*pi*(intDiam/2)^3;
+        dblDiam = RProp(i).EquivDiameter * getBoxVal(handles.txtPixelLen);
+        intSumVol = intSumVol + 4/3*pi*(dblDiam/2)^3;
         
-        arrDiam(end) = intDiam;
+        arrDiam(end+1) = dblDiam;
     end
     
     handles.Stats.GperL{mod(handles.Counter-1,500)+1} = ...
@@ -799,7 +805,10 @@ function PlotStats(handles)
         intGperL(i,1) = arrGperL{i}(1);
         intGperL(i,2) = arrGperL{i}(2);
     end
-    line('XData',intGperL(:,1),'YData',intGperL(:,2));
+    plot(intGperL(:,1),intGperL(:,2));
+    xlabel('Image #');
+    ylabel('Grams/Liter');
+    xlim([handles.Counter - 10, handles.Counter]);
     
     axes(handles.axeHist);
     cla;
@@ -816,5 +825,3 @@ function sldHistorical_Callback(hObject, eventdata, handles) %#ok<DEFNU>
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 end
-
-
