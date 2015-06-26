@@ -1,8 +1,16 @@
+% This is the main function of matlab code. It will be called as .dll from C# HMI. 
+% Calculated result will be send to C# HMI following the order the the output array.
+% The main funtions of Matlab code are: 
+% 1. Capture and save photo
+% 2. Do image processing and acquire particle data
+% 3. Send particle data information back to C#
+% 4. Save particle data to file for data mining
+%%
+
 function output = main(file_full_path, plotVal)
 global  input_image_type particle_diameter_type parameter_over_time
 
 %% Load config
-% config = load_config('/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/conf.txt');
 config = load_config('C:\Users\Minghua\Desktop\conf.txt');
 
 %% Initialization
@@ -14,16 +22,16 @@ major_axis = [];
 equiv_diam = [];
 volume     = [];
 
-idx  = 1;
+idx = 1;
 while (idx <= config.moving_average_length)
-    %% Input
-    % Test
-    %raw_image =  importdata('/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/particle_counter/samples/10.jpg');
-   % raw_image = importdata(file_full_path);
-    %Original
-    raw_image = automated_frame_capture(config.lucam_snapshot_exposure, config.lucam_gain);
-    %% Camera Connection
-    if raw_image == -1
+	%% Input
+	% Test
+	%raw_image =  importdata('/Users/Pedram/Dropbox/Ataee/[Repositories]/Khayyam/particle_counter/samples/10.jpg');
+	%raw_image = importdata(file_full_path);
+	%Original
+	raw_image = automated_frame_capture(config.lucam_snapshot_exposure, config.lucam_gain);
+	%% Camera Connection
+	if raw_image == -1
        number     = -1;
        area       = 0;
        minor_axis = 0;
@@ -37,12 +45,12 @@ while (idx <= config.moving_average_length)
        return; 
     end
     
-    %% Initialization
+	%% Initialization
     output            = image_initialization(raw_image, config);
     raw_image         = output.raw_image;
     cropped_raw_image = output.cropped_raw_image;
-    config            = output.config;
-    %% Particle Counter
+	config            = output.config;
+	%% Particle Counter
     calculation  = particle_counter({cropped_raw_image, config});
 
     % Results
@@ -106,7 +114,7 @@ output.contam_level_num_per_liter  = contam_level_num_per_liter;
 
 clearvars -except output input_image_type particle_diameter_type parameter_over_time
 end
-
+%%
 function plotImage(vargin)
 global  input_image_type particle_diameter_type parameter_over_time
 file_name = vargin{1};
@@ -122,15 +130,14 @@ saveas(f, strcat(file_name, '_raw.jpeg'))
 
 %imshow(imresize(initImage,ratioScaleDown),[], 'Parent', handles.axes7);
 for  particle_id = 0 : size(centroid, 2) - 1
-    hold on
+	hold on
     % scatter((floor( config.crop_coordinates_xmin / 2048 * size(raw_image,1) ) + centroid(particle_id+1, 1)) * scale_down_ratio, ...
     %        (floor( config.crop_coordinates_ymin / 2448 * size(raw_image,2) ) + centroid(particle_id+1, 2)) * scale_down_ratio, 15, 'r*');
     scatter(centroid(1, particle_id+1) * scale_down_ratio, centroid(2, particle_id+1) * scale_down_ratio, 100, 'r*');
 end
 print (f, '-r80', '-djpeg', strcat(file_name,'_proc.jpeg'));
 saveas(f, strcat(file_name, '_proc.jpeg'));
-
 close(f);
-    
+
 clearvars -except input_image_type particle_diameter_type parameter_over_time
 end

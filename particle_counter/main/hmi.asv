@@ -356,7 +356,7 @@ while Flag.Start == 1 && Flag.Time <= upperbound
         handles.plotVsTime(i) = calculation.contam_level_gram_per_liter;
     end
     plotVsTime(hObject, eventdata, handles)
-    %% Save raw_image, Cropped_raw_image, Cropped_raw_image_with_particle_count to directry 'main\dateset_evaluation\'
+    %% save raw_image, Cropped_raw_image, Cropped_raw_image_with_particle_count to directry 'main\dateset_evaluation\'
     filename = strcat(num2str(Flag.Time), '.mat');
     TodayDate = date;
     if ~exist(['dataset_evaluation\', TodayDate],'dir')
@@ -381,12 +381,12 @@ while Flag.Start == 1 && Flag.Time <= upperbound
        save(['dataset_evaluation\', TodayDate, '\', filename], 'calculation_noimage');
        imwrite(calculation.raw_image,         cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), '.jpg'], 'jpeg');
        imwrite(calculation.cropped_raw_image * 256, cmap, ['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'C.jpg'], 'jpeg'); 
-       % Save image with scatters represnting the particle been counted
+       % save image with scatters represnting the particle been counted
        saveParticleCountImage = getframe(handles.axes7);
        saveParticleCountImage = imresize(frame2im(saveParticleCountImage), 4);
        imwrite(saveParticleCountImage,['dataset_evaluation\', TodayDate, '\', num2str(Flag.Time), 'S.jpg'], 'jpeg');        
        fileID = fopen(['dataset_evaluation\', TodayDate, '\', 'contamination.txt'],'a');
-       % Save to file for each frame with [time, g/L, Total number of particle, histogram with 0.1mm bins]
+       % save to file for each frame with [time, g/L, Total number of particle, histogram with 0.1mm bins]
        fprintf(fileID,'%8f, %12.4f, %4d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d\r\n', contamination_hist);
        fclose(fileID);
     end        
