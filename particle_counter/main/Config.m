@@ -1,5 +1,6 @@
 %% Notes
-% moving avg size
+% moving avg size (Done in PLC?)
+% Save photos from camera sampling?
 
 %% Main GUI Functions
 function varargout = Config(varargin)
@@ -559,7 +560,7 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
             handles.imgCompare = handles.imgRaw;
             set(handles.cbFilterStatic,'Enable','on');
         end
-        Get image capture parameters
+%       Get image capture parameters
         dblExposure = getBoxVal(handles.txtExposure);
         dblGain = getBoxVal(handles.txtGain);
         dblGamma = getBoxVal(handles.txtGamma);
