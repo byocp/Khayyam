@@ -27,7 +27,7 @@ function varargout = Config(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 26-Jun-2015 16:49:39
+    % Last Modified by GUIDE v2.5 29-Jun-2015 11:09:20
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -245,7 +245,7 @@ function axeSampleImg_ButtonDownFcn(hObject, ~, ~)
                 return;
             end
         case 'radFromFile'
-            [strFileName, strPath] = uigetfile({'*.jpg','JPEG Files'},...
+            [strFileName, strPath] = uigetfile({'*.jpg;*.bmp;*.png;*.tif','All Image Files'},...
                                                     'Select Image File');
             if ~strFileName
                 errordlg('No file selected')
@@ -571,7 +571,7 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
             errordlg('Error while retrieving picture from camera')
             return;
         end
-%         handles.imgRaw = imread(['D:\Users\Kepstrum\Desktop\Test\' num2str(mod(handles.Counter-1,3)+1) '.jpg']);
+%         handles.imgRaw = imread(['D:\Users\Kepstrum\Desktop\Test\' num2str(mod(handles.Counter-1,3)+1) '.png']);
     
         % Set image to grayscale
         if size(handles.imgRaw,3) == 3
@@ -585,7 +585,7 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
         
         handles = ProcImgStats(handles);
         
-        PlotStats(handles)
+        handles = PlotStats(handles);
         
         dblTime = toc(handles.Time);
         strHour = num2str(floor(dblTime/3600));
@@ -616,9 +616,11 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
         if get(handles.cbSaveGperL, 'Value')
             fidGperL = fopen([dirSave 'GramsPerLiter.txt'], 'a');
             if handles.Counter == 1
-                fprintf(fidGperL,'%s,%s','Index','Grams/Liter');
+                fprintf(fidGperL,'%s,%s,%s\r\n','Index','Grams/Liter','Average g/L');
             end
-            fprintf(fidGperL,'%d,%2.2f',handles.Stats.GperL{handles.Counter}(1),handles.Stats.GperL{handles.Counter}(2));
+            fprintf(fidGperL,'%d,%2.2f,%2.2f\r\n',handles.Stats.GperL{handles.Counter}(1), ...
+                                              handles.Stats.GperL{handles.Counter}(2), ...
+                                              handles.Stats.avgGperL(handles.Counter,2));
             fclose(fidGperL);
         end
         if get(handles.cbSaveHist, 'Value')
@@ -752,6 +754,7 @@ function handles = Initialize(handles)
     end
     
     handles.Stats.GperL = {};
+    handles.Stats.avgGperL = [];
     handles.Stats.Diameters = {};
     
     % Update handles structure
@@ -924,7 +927,7 @@ function handles = ProcImgStats(handles)
     end
     
     handles.Stats.GperL{mod(handles.Counter-1,500)+1} = ...
-            [handles.Counter,intSumVol / 1000^3 * ...
+            [handles.Counter,intSumVol / 10^3 * ...
             getBoxVal(handles.txtDensity) / ...
             (getBoxVal(handles.txtFrameVol) / 10^3 / 1000)];
     
@@ -935,7 +938,7 @@ function handles = ProcImgStats(handles)
 end
 
 % Plot image statistics
-function PlotStats(varargin)
+function handles = PlotStats(varargin)
     handles = varargin{1};
     axes(handles.axeGperL);
     if nargin == 1
@@ -945,6 +948,12 @@ function PlotStats(varargin)
             intGperL(i,2) = arrGperL{i}(2); %#ok<AGROW>
         end
         plot(intGperL(:,1),intGperL(:,2));
+        
+        hold on
+        plot(intGperL(:,1),ones(i,1)*mean(intGperL(:,2)),'r');
+        handles.Stats.avgGperL(handles.Counter,:) = [handles.Counter,mean(intGperL(:,2))];
+        hold off
+        
         xlabel('Image #');
         ylabel('Grams/Liter');
         xlim([handles.Counter - 10, handles.Counter]);
