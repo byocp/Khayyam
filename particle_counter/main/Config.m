@@ -815,12 +815,13 @@ function PlotStats(handles)
     axes(handles.axeHist);
     cla;
     dblMaxDiam = getBoxVal(handles.txtMaxDiam);
-    MaxHistBin = ceil(dblMaxDiam * 10) / 10; 
-    bins = histc(handles.Stats.Diameters{handles.Counter}{3},0:0.1:MaxHistBin)
-    bar(0:0.1:MaxHistBin, bins);
+    MaxHistCenter = (ceil(dblMaxDiam * 10) - 0.5) / 10;
+    HistCenter = 0.05 : 0.1 : MaxHistCenter;
+    bins = histc(handles.Stats.Diameters{handles.Counter}{3}, HistCenter);
+    bar(HistCenter, bins);
     xlabel('Count');
     ylabel('Particle Diameter [mm]');
-    xlim([0, MaxHistBin]);
+    xlim([0, MaxHistCenter + 0.05]);
 end
 
 % --- Executes on slider movement.
