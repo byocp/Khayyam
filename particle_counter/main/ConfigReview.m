@@ -190,15 +190,15 @@ function sldHistorical_Callback(hObject, ~, handles) %#ok<DEFNU>
     axes(handles.axeGperL);
     intSlider = get(hObject,'Value');
     if (intSlider - intRange) > 0
-        xlim([intSlider - intRange, intSlider]);
         set(handles.txtXRangeLow,'String',intSlider - intRange);
         set(handles.txtXRangeHigh,'String',intSlider);
         [handles,~] = PlotGperL(handles);
+        xlim([intSlider - intRange, intSlider]);
     else
-        xlim([1, intRange]);
         set(handles.txtXRangeLow,'String',1);
         set(handles.txtXRangeHigh,'String',intRange);
         [handles,~] = PlotGperL(handles);
+        xlim([1, intRange]);
     end
     dblYLim = get(handles.axeGperL,'YLim');
     set(handles.txtYRangeLow,'String',dblYLim(1));
