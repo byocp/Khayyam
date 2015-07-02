@@ -157,22 +157,12 @@ function btnLoad_Callback(hObject, ~, handles) %#ok<DEFNU>
         % Plot g/L
         axes(handles.axeGperL);
 
-        arrGperL = handles.Stats.GperL;
-        for i = 1:length(arrGperL)
-            intGperL(i,1) = arrGperL{i}(1); %#ok<AGROW>
-            intGperL(i,2) = arrGperL{i}(2); %#ok<AGROW>
-        end
-        plot(intGperL(:,1),intGperL(:,2));
-
-        % Plots the average of the g/L so far as a red line
-        hold on
-        plot(intGperL(:,1),ones(i,1)*handles.Stats.avgGperL(i),'r');
-        plot(intGperL(:,1),ones(i,1)*handles.Stats.localAvgGperL(i),'g');
-        hold off
+        [handles,intGperL] = PlotGperL(handles);
     
         % Only shows the 10 most recent results (use slider to see history)
         intStart = intGperL(1,1);
         intEnd = intGperL(end,1);
+        handles.intEnd = intEnd;
         xlabel('Image #');
         ylabel('Grams/Liter');
         xlim([intEnd - 10, intEnd]);
@@ -372,6 +362,30 @@ function handles = PlotHist(varargin)
     % they all appear together (aka plot histogram first?)
 end
 
+function [handles,intGperL] = PlotGperL(handles)
+    arrGperL = handles.Stats.GperL;
+    for i = 1:length(arrGperL)
+        intGperL(i,1) = arrGperL{i}(1); %#ok<AGROW>
+        intGperL(i,2) = arrGperL{i}(2); %#ok<AGROW>
+    end
+    plot(intGperL(:,1),intGperL(:,2));
+
+    dblXLim = get(handles.axeGperL,'XLim');
+    
+    % Plots the average of the g/L so far as a red line
+    hold on
+    if isfield(handles,'intEnd')
+        if dblXLim(2) > handles.intEnd
+            dblXLim(2) = handles.intEnd;
+        end
+        plot(intGperL(:,1),ones(i,1)*handles.Stats.avgGperL(dblXLim(2)),'r');
+        plot(intGperL(:,1),ones(i,1)*handles.Stats.localAvgGperL(dblXLim(2)),'g');
+    else
+        plot(intGperL(:,1),ones(i,1)*handles.Stats.avgGperL(i),'r');
+        plot(intGperL(:,1),ones(i,1)*handles.Stats.localAvgGperL(i),'g');
+    end
+    hold off
+end
 %% Not Used
 % This section contains all the functions that are not used, but has been
 % in the past and has potential to be used in the future
