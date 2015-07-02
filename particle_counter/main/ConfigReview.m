@@ -320,10 +320,9 @@ function cbAutoScale_Callback(hObject, ~, handles) %#ok<DEFNU>
         set(handles.axeGperL,'YLimMode','auto')
     else
         set(handles.axeGperL,'YLimMode','manual')
+        handles = txtYRangeLow_Callback(handles.txtYRangeLow,[],handles);
+        handles = txtYRangeHigh_Callback(handles.txtYRangeHigh,[],handles);
     end
-    
-    handles = txtYRangeLow_Callback(handles.txtYRangeLow,[],handles);
-    handles = txtYRangeHigh_Callback(handles.txtYRangeHigh,[],handles);
     
     guidata(hObject,handles);
 end
