@@ -34,7 +34,7 @@ function varargout = ConfigReview(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 02-Jul-2015 13:57:10
+    % Last Modified by GUIDE v2.5 02-Jul-2015 14:37:48
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -153,10 +153,10 @@ function btnLoad_Callback(hObject, ~, handles) %#ok<DEFNU>
             handles.Stats.localAvgGperL(i) = str2double(strGperL{1}(4));
             i = i+1;
         end
-        
+
         % Plot g/L
         axes(handles.axeGperL);
-        
+
         arrGperL = handles.Stats.GperL;
         for i = 1:length(arrGperL)
             intGperL(i,1) = arrGperL{i}(1); %#ok<AGROW>
@@ -169,7 +169,7 @@ function btnLoad_Callback(hObject, ~, handles) %#ok<DEFNU>
         plot(intGperL(:,1),ones(i,1)*handles.Stats.avgGperL(i),'r');
         plot(intGperL(:,1),ones(i,1)*handles.Stats.localAvgGperL(i),'g');
         hold off
-
+    
         % Only shows the 10 most recent results (use slider to see history)
         intStart = intGperL(1,1);
         intEnd = intGperL(end,1);
@@ -178,7 +178,6 @@ function btnLoad_Callback(hObject, ~, handles) %#ok<DEFNU>
         xlim([intEnd - 10, intEnd]);
         set(handles.txtRangeLow,'String',intEnd-10);
         set(handles.txtRangeHigh,'String',intEnd);
-        
         set(handles.sldHistorical,'Max',intEnd,'Min',intStart,'Value',intEnd);
         set(handles.btnReview,'Enable','on');
     else
@@ -193,7 +192,7 @@ end
 function sldHistorical_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Updates the range of the g/L plot to see past data
     intRange = str2double(get(handles.txtRangeHigh,'String')) - ...
-               str2double(get(handles.txtRangeLow,'String'));
+               str2double(get(handles.txtRangeLow,'String')) + 1;
     
     axes(handles.axeGperL);
     intSlider = get(hObject,'Value');
@@ -232,7 +231,7 @@ function btnReview_Callback(hObject, ~, handles) %#ok<DEFNU>
     imshow(imgRaw);
     axes(handles.axeProcessed);
     imshow(imgProcessed);
-    PlotStats(handles,stcHist);
+    PlotHist(handles,stcHist);
     
     guidata(hObject,handles);
 end
@@ -240,13 +239,15 @@ end
 function txtRangeLow_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Set the lower range of the g/L plot
 
-    intMin = str2double(get(hObject,'Value'));
-    intMax = str2double(get(handles.txtRangeHigh,'Value'));
+    intMin = str2double(get(hObject,'String'));
+    intMax = str2double(get(handles.txtRangeHigh,'String'));
     
     if intMin >= intMax
         intMax = intMin + 10;
     end
 
+    set(handles.sldHistorical,'Value',intMax);
+    
     axes(handles.axeGperL);
     xlim([intMin intMax]);
     
@@ -256,12 +257,14 @@ end
 function txtRangeHigh_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Set the higher range of the g/L plot
 
-    intMin = str2double(get(handles.txtRangeLow,'Value'));
-    intMax = str2double(get(hObject,'Value'));
+    intMin = str2double(get(handles.txtRangeLow,'String'));
+    intMax = str2double(get(hObject,'String'));
     
     if intMax <= intMin
         intMin = intMax - 10;
     end
+
+    set(handles.sldHistorical,'Value',intMax);
 
     axes(handles.axeGperL);
     xlim([intMin intMax]);
@@ -286,7 +289,7 @@ function handles = Initialize(handles)
 end
 
 % Plot image statistics
-function handles = PlotStats(varargin)
+function handles = PlotHist(varargin)
     % Plots the g/L and histogram
 
     handles = varargin{1};
