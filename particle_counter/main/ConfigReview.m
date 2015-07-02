@@ -178,6 +178,9 @@ function btnLoad_Callback(hObject, ~, handles) %#ok<DEFNU>
         xlim([intEnd - 10, intEnd]);
         set(handles.txtXRangeLow,'String',intEnd-10);
         set(handles.txtXRangeHigh,'String',intEnd);
+        dblYLim = get(handles.axeGperL,'YLim');
+        set(handles.txtYRangeLow,'String',dblYLim(1));
+        set(handles.txtYRangeHigh,'String',dblYLim(2));
         set(handles.sldHistorical,'Max',intEnd,'Min',intStart,'Value',intEnd);
         set(handles.btnReview,'Enable','on');
     else
@@ -205,6 +208,9 @@ function sldHistorical_Callback(hObject, ~, handles) %#ok<DEFNU>
         set(handles.txtXRangeLow,'String',1);
         set(handles.txtXRangeHigh,'String',intRange);
     end
+    dblYLim = get(handles.axeGperL,'YLim');
+    set(handles.txtYRangeLow,'String',dblYLim(1));
+    set(handles.txtYRangeHigh,'String',dblYLim(2));
     
     guidata(hObject,handles);
 end
@@ -272,7 +278,7 @@ function txtXRangeHigh_Callback(hObject, ~, handles) %#ok<DEFNU>
     guidata(hObject,handles);
 end
 
-function txtYRangeLow_Callback(hObject, ~, handles) %#ok<DEFNU>
+function handles = txtYRangeLow_Callback(hObject, ~, handles)
     % Set the lower range of the g/L plot
 
     intMin = str2double(get(hObject,'String'));
@@ -290,7 +296,7 @@ function txtYRangeLow_Callback(hObject, ~, handles) %#ok<DEFNU>
     guidata(hObject,handles);
 end
 
-function txtYRangeHigh_Callback(hObject, ~, handles) %#ok<DEFNU>
+function handles = txtYRangeHigh_Callback(hObject, ~, handles)
     % Set the higher range of the g/L plot
 
     intMin = str2double(get(handles.txtYRangeLow,'String'));
@@ -315,6 +321,9 @@ function cbAutoScale_Callback(hObject, ~, handles) %#ok<DEFNU>
     else
         set(handles.axeGperL,'YLimMode','manual')
     end
+    
+    handles = txtYRangeLow_Callback(handles.txtYRangeLow,[],handles);
+    handles = txtYRangeHigh_Callback(handles.txtYRangeHigh,[],handles);
     
     guidata(hObject,handles);
 end
