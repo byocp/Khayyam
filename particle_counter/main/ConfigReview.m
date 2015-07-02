@@ -34,7 +34,7 @@ function varargout = ConfigReview(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 02-Jul-2015 14:37:48
+    % Last Modified by GUIDE v2.5 02-Jul-2015 15:37:03
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -176,8 +176,8 @@ function btnLoad_Callback(hObject, ~, handles) %#ok<DEFNU>
         xlabel('Image #');
         ylabel('Grams/Liter');
         xlim([intEnd - 10, intEnd]);
-        set(handles.txtRangeLow,'String',intEnd-10);
-        set(handles.txtRangeHigh,'String',intEnd);
+        set(handles.txtXRangeLow,'String',intEnd-10);
+        set(handles.txtXRangeHigh,'String',intEnd);
         set(handles.sldHistorical,'Max',intEnd,'Min',intStart,'Value',intEnd);
         set(handles.btnReview,'Enable','on');
     else
@@ -191,19 +191,19 @@ end
 % Executes on slider movement.
 function sldHistorical_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Updates the range of the g/L plot to see past data
-    intRange = str2double(get(handles.txtRangeHigh,'String')) - ...
-               str2double(get(handles.txtRangeLow,'String')) + 1;
+    intRange = str2double(get(handles.txtXRangeHigh,'String')) - ...
+               str2double(get(handles.txtXRangeLow,'String')) + 1;
     
     axes(handles.axeGperL);
     intSlider = get(hObject,'Value');
     if (intSlider - intRange) > 0
         xlim([intSlider - intRange, intSlider]);
-        set(handles.txtRangeLow,'String',intSlider - intRange);
-        set(handles.txtRangeHigh,'String',intSlider);
+        set(handles.txtXRangeLow,'String',intSlider - intRange);
+        set(handles.txtXRangeHigh,'String',intSlider);
     else
         xlim([1, intRange]);
-        set(handles.txtRangeLow,'String',1);
-        set(handles.txtRangeHigh,'String',intRange);
+        set(handles.txtXRangeLow,'String',1);
+        set(handles.txtXRangeHigh,'String',intRange);
     end
     
     guidata(hObject,handles);
@@ -236,11 +236,11 @@ function btnReview_Callback(hObject, ~, handles) %#ok<DEFNU>
     guidata(hObject,handles);
 end
 
-function txtRangeLow_Callback(hObject, ~, handles) %#ok<DEFNU>
+function txtXRangeLow_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Set the lower range of the g/L plot
 
     intMin = str2double(get(hObject,'String'));
-    intMax = str2double(get(handles.txtRangeHigh,'String'));
+    intMax = str2double(get(handles.txtXRangeHigh,'String'));
     
     if intMin >= intMax
         intMax = intMin + 10;
@@ -254,10 +254,10 @@ function txtRangeLow_Callback(hObject, ~, handles) %#ok<DEFNU>
     guidata(hObject,handles);
 end
 
-function txtRangeHigh_Callback(hObject, ~, handles) %#ok<DEFNU>
+function txtXRangeHigh_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Set the higher range of the g/L plot
 
-    intMin = str2double(get(handles.txtRangeLow,'String'));
+    intMin = str2double(get(handles.txtXRangeLow,'String'));
     intMax = str2double(get(hObject,'String'));
     
     if intMax <= intMin
@@ -268,6 +268,53 @@ function txtRangeHigh_Callback(hObject, ~, handles) %#ok<DEFNU>
 
     axes(handles.axeGperL);
     xlim([intMin intMax]);
+    
+    guidata(hObject,handles);
+end
+
+function txtYRangeLow_Callback(hObject, ~, handles) %#ok<DEFNU>
+    % Set the lower range of the g/L plot
+
+    intMin = str2double(get(hObject,'String'));
+    intMax = str2double(get(handles.txtYRangeHigh,'String'));
+    
+    if intMin >= intMax
+        intMax = intMin + 1;
+    end
+
+    set(handles.cbAutoScale,'Value',0);
+    
+    axes(handles.axeGperL);
+    ylim([intMin intMax]);
+    
+    guidata(hObject,handles);
+end
+
+function txtYRangeHigh_Callback(hObject, ~, handles) %#ok<DEFNU>
+    % Set the higher range of the g/L plot
+
+    intMin = str2double(get(handles.txtYRangeLow,'String'));
+    intMax = str2double(get(hObject,'String'));
+    
+    if intMax <= intMin
+        intMin = intMax - 1;
+    end
+
+    set(handles.cbAutoScale,'Value',0);
+
+    axes(handles.axeGperL);
+    ylim([intMin intMax]);
+    
+    guidata(hObject,handles);
+end
+
+% --- Executes on button press in cbAutoScale.
+function cbAutoScale_Callback(hObject, ~, handles) %#ok<DEFNU>
+    if get(hObject,'Value')
+        set(handles.axeGperL,'YLimMode','auto')
+    else
+        set(handles.axeGperL,'YLimMode','manual')
+    end
     
     guidata(hObject,handles);
 end
