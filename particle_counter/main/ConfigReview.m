@@ -171,11 +171,13 @@ function btnLoad_Callback(hObject, ~, handles) %#ok<DEFNU>
         hold off
 
         % Only shows the 10 most recent results (use slider to see history)
+        intStart = intGperL(1,1);
+        intEnd = intGperL(end,1);
         xlabel('Image #');
         ylabel('Grams/Liter');
-        xlim([i - 10, i]);
+        xlim([intEnd - 10, intEnd]);
         
-        set(handles.sldHistorical,'Max',i,'Min',1,'Value',i);
+        set(handles.sldHistorical,'Max',intEnd,'Min',intStart,'Value',intEnd);
         set(handles.btnReview,'Enable','on');
     else
         errordlg('Invalid folder path');
