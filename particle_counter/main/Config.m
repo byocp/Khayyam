@@ -54,7 +54,7 @@ function varargout = Config(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 29-Jun-2015 11:09:20
+    % Last Modified by GUIDE v2.5 02-Jul-2015 09:47:38
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -778,11 +778,12 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
         if get(handles.cbSaveGperL, 'Value')
             fidGperL = fopen([dirSave 'GramsPerLiter.txt'], 'a');
             if handles.Counter == 1
-                fprintf(fidGperL,'%s,%s,%s\r\n','Index','Grams/Liter','Average g/L');
+                fprintf(fidGperL,'%s,%s,%s,%s\r\n','Index','Grams/Liter','Average g/L','Local Average g/L');
             end
-            fprintf(fidGperL,'%d,%2.2f,%2.2f\r\n',handles.Stats.GperL{mod(handles.Counter-1,500)+1}(1), ...
+            fprintf(fidGperL,'%d,%2.2f,%2.2f,%2.2f\r\n',handles.Stats.GperL{mod(handles.Counter-1,500)+1}(1), ...
                                               handles.Stats.GperL{mod(handles.Counter-1,500)+1}(2), ...
-                                              handles.Stats.avgGperL(handles.Counter,2));
+                                              handles.Stats.avgGperL(handles.Counter,2),...
+                                              handles.Stats.localAvgGperL(handles.Counter,2));
             fclose(fidGperL);
         end
         
@@ -960,6 +961,7 @@ function handles = Initialize(handles)
     % Stats is where the particle counts are stored
     handles.Stats.GperL = {};
     handles.Stats.avgGperL = [];
+    handles.Stats.localAvgGperL = [];
     handles.Stats.Diameters = {};
     
     % Update handles structure
@@ -1232,7 +1234,9 @@ function handles = PlotStats(varargin)
         % Plots the average of the g/L so far as a red line
         hold on
         plot(intGperL(:,1),ones(i,1)*mean(intGperL(:,2)),'r');
+        plot(intGperL(:,1),ones(i,1)*mean(intGperL(max(end-20,1):end,2)),'g');
         handles.Stats.avgGperL(handles.Counter,:) = [handles.Counter,mean(intGperL(:,2))];
+        handles.Stats.localAvgGperL(handles.Counter,:) = [handles.Counter,mean(intGperL(max(end-20,1):end,2))];
         hold off
         
         % Only shows the 10 most recent results (use slider to see history)
@@ -1253,8 +1257,10 @@ function handles = PlotStats(varargin)
     dblMaxDiam = getBoxVal(handles.txtMaxDiam);
     if nargin == 1
         bins = histc(handles.Stats.Diameters{mod(handles.Counter-1,500)+1}{3},dblMinDiam:0.1:dblMaxDiam);
+        set(handles.lblTimeStamp,'String',handles.Stats.Diameters{mod(handles.Counter-1,500)+1}{2});
     else
         bins = histc(varargin{2}{3},dblMinDiam:0.1:dblMaxDiam);
+        set(handles.lblTimeStamp,'String',varargin{2}{2});
     end
     if isempty(bins)
         bins = zeros(length(dblMinDiam:0.1:dblMaxDiam),1);
