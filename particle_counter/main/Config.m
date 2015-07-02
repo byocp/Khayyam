@@ -782,8 +782,8 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
             end
             fprintf(fidGperL,'%d,%2.2f,%2.2f,%2.2f\r\n',handles.Stats.GperL{mod(handles.Counter-1,500)+1}(1), ...
                                               handles.Stats.GperL{mod(handles.Counter-1,500)+1}(2), ...
-                                              handles.Stats.avgGperL(handles.Counter,2),...
-                                              handles.Stats.localAvgGperL(handles.Counter,2));
+                                              handles.Stats.avgGperL(mod(handles.Counter-1,500)+1,2),...
+                                              handles.Stats.localAvgGperL(mod(handles.Counter-1,500)+1,2));
             fclose(fidGperL);
         end
         
@@ -1235,8 +1235,8 @@ function handles = PlotStats(varargin)
         hold on
         plot(intGperL(:,1),ones(i,1)*mean(intGperL(:,2)),'r');
         plot(intGperL(:,1),ones(i,1)*mean(intGperL(max(end-20,1):end,2)),'g');
-        handles.Stats.avgGperL(handles.Counter,:) = [handles.Counter,mean(intGperL(:,2))];
-        handles.Stats.localAvgGperL(handles.Counter,:) = [handles.Counter,mean(intGperL(max(end-20,1):end,2))];
+        handles.Stats.avgGperL(mod(handles.Counter-1,500)+1,:) = [handles.Counter,mean(intGperL(:,2))];
+        handles.Stats.localAvgGperL(mod(handles.Counter-1,500)+1,:) = [handles.Counter,mean(intGperL(max(end-20,1):end,2))];
         hold off
         
         % Only shows the 10 most recent results (use slider to see history)
