@@ -380,8 +380,8 @@ function [handles,intGperL] = PlotGperL(handles)
         if dblXLim(2) > handles.intEnd
             dblXLim(2) = handles.intEnd;
         end
-        plot(intGperL(:,1),ones(i,1)*handles.Stats.avgGperL(dblXLim(2)),'r');
-        plot(intGperL(:,1),ones(i,1)*handles.Stats.localAvgGperL(dblXLim(2)),'g');
+        plot(intGperL(:,1),ones(i,1)*handles.Stats.avgGperL(round(dblXLim(2))),'r');
+        plot(intGperL(:,1),ones(i,1)*handles.Stats.localAvgGperL(round(dblXLim(2))),'g');
     else
         plot(intGperL(:,1),ones(i,1)*handles.Stats.avgGperL(i),'r');
         plot(intGperL(:,1),ones(i,1)*handles.Stats.localAvgGperL(i),'g');
