@@ -162,6 +162,7 @@ function btnLoad_Callback(hObject, ~, handles) %#ok<DEFNU>
         % Only shows the 10 most recent results (use slider to see history)
         intStart = intGperL(1,1);
         intEnd = intGperL(end,1);
+        handles.intStart = intStart;
         handles.intEnd = intEnd;
         xlabel('Image #');
         ylabel('Grams/Liter');
@@ -380,8 +381,9 @@ function [handles,intGperL] = PlotGperL(handles)
         if dblXLim(2) > handles.intEnd
             dblXLim(2) = handles.intEnd;
         end
-        plot(intGperL(:,1),ones(i,1)*handles.Stats.avgGperL(round(dblXLim(2))),'r');
-        plot(intGperL(:,1),ones(i,1)*handles.Stats.localAvgGperL(round(dblXLim(2))),'g');
+        index = round(dblXLim(2)) - handles.intStart + 1;
+        plot(intGperL(:,1),ones(i,1)*handles.Stats.avgGperL(index),'r');
+        plot(intGperL(:,1),ones(i,1)*handles.Stats.localAvgGperL(index),'g');
     else
         plot(intGperL(:,1),ones(i,1)*handles.Stats.avgGperL(i),'r');
         plot(intGperL(:,1),ones(i,1)*handles.Stats.localAvgGperL(i),'g');
