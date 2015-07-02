@@ -34,7 +34,7 @@ function varargout = ConfigReview(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 02-Jul-2015 11:24:49
+    % Last Modified by GUIDE v2.5 02-Jul-2015 13:57:10
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -176,6 +176,8 @@ function btnLoad_Callback(hObject, ~, handles) %#ok<DEFNU>
         xlabel('Image #');
         ylabel('Grams/Liter');
         xlim([intEnd - 10, intEnd]);
+        set(handles.txtRangeLow,'String',intEnd-10);
+        set(handles.txtRangeHigh,'String',intEnd);
         
         set(handles.sldHistorical,'Max',intEnd,'Min',intStart,'Value',intEnd);
         set(handles.btnReview,'Enable','on');
@@ -190,13 +192,19 @@ end
 % Executes on slider movement.
 function sldHistorical_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Updates the range of the g/L plot to see past data
-
+    intRange = str2double(get(handles.txtRangeHigh,'String')) - ...
+               str2double(get(handles.txtRangeLow,'String'));
+    
     axes(handles.axeGperL);
     intSlider = get(hObject,'Value');
-    if (intSlider - 10) > 0
-        xlim([intSlider - 10, intSlider]);
+    if (intSlider - intRange) > 0
+        xlim([intSlider - intRange, intSlider]);
+        set(handles.txtRangeLow,'String',intSlider - intRange);
+        set(handles.txtRangeHigh,'String',intSlider);
     else
-        xlim([1, 10]);
+        xlim([1, intRange]);
+        set(handles.txtRangeLow,'String',1);
+        set(handles.txtRangeHigh,'String',intRange);
     end
     
     guidata(hObject,handles);
@@ -229,6 +237,38 @@ function btnReview_Callback(hObject, ~, handles) %#ok<DEFNU>
     guidata(hObject,handles);
 end
 
+function txtRangeLow_Callback(hObject, ~, handles) %#ok<DEFNU>
+    % Set the lower range of the g/L plot
+
+    intMin = str2double(get(hObject,'Value'));
+    intMax = str2double(get(handles.txtRangeHigh,'Value'));
+    
+    if intMin >= intMax
+        intMax = intMin + 10;
+    end
+
+    axes(handles.axeGperL);
+    xlim([intMin intMax]);
+    
+    guidata(hObject,handles);
+end
+
+function txtRangeHigh_Callback(hObject, ~, handles) %#ok<DEFNU>
+    % Set the higher range of the g/L plot
+
+    intMin = str2double(get(handles.txtRangeLow,'Value'));
+    intMax = str2double(get(hObject,'Value'));
+    
+    if intMax <= intMin
+        intMin = intMax - 10;
+    end
+
+    axes(handles.axeGperL);
+    xlim([intMin intMax]);
+    
+    guidata(hObject,handles);
+end
+
 %% Custom Functions
 % This section contains all the custom functions that does most of the
 % actual work. These functions can all be taken outside as their separate
@@ -243,7 +283,6 @@ function handles = Initialize(handles)
     handles.Stats.GperL = {};
     handles.Stats.avgGperL = [];
     handles.Stats.localAvgGperL = [];
-    handles.Stats.Diameters = {};
 end
 
 % Plot image statistics
