@@ -157,7 +157,7 @@ function btnLoad_Callback(hObject, ~, handles) %#ok<DEFNU>
         % Plot g/L
         axes(handles.axeGperL);
 
-        [handles,intGperL] = PlotGperL(handles);
+        [handles,intGperL] = PlotGperL(handles,[]);
     
         % Only shows the 10 most recent results (use slider to see history)
         intStart = intGperL(1,1);
@@ -191,15 +191,17 @@ function sldHistorical_Callback(hObject, ~, handles) %#ok<DEFNU>
     axes(handles.axeGperL);
     intSlider = get(hObject,'Value');
     if (intSlider - intRange) > 0
-        set(handles.txtXRangeLow,'String',intSlider - intRange);
+        set(handles.txtXRangeLow,'String',intSlider - intRange + 1);
         set(handles.txtXRangeHigh,'String',intSlider);
-        [handles,~] = PlotGperL(handles);
+        [handles,~] = PlotGperL(handles,intSlider);
         xlim([intSlider - intRange, intSlider]);
+        handles = cbAutoScale_Callback(handles.cbAutoScale,[],handles);
     else
         set(handles.txtXRangeLow,'String',1);
         set(handles.txtXRangeHigh,'String',intRange);
-        [handles,~] = PlotGperL(handles);
+        [handles,~] = PlotGperL(handles,intSlider);
         xlim([1, intRange]);
+        handles = cbAutoScale_Callback(handles.cbAutoScale,[],handles);
     end
     dblYLim = get(handles.axeGperL,'YLim');
     set(handles.txtYRangeLow,'String',dblYLim(1));
@@ -308,7 +310,7 @@ function handles = txtYRangeHigh_Callback(hObject, ~, handles)
 end
 
 % --- Executes on button press in cbAutoScale.
-function cbAutoScale_Callback(hObject, ~, handles) %#ok<DEFNU>
+function handles = cbAutoScale_Callback(hObject, ~, handles) %#ok<DEFNU>
     if get(hObject,'Value')
         set(handles.axeGperL,'YLimMode','auto')
     else
@@ -365,23 +367,21 @@ function handles = PlotHist(varargin)
     % they all appear together (aka plot histogram first?)
 end
 
-function [handles,intGperL] = PlotGperL(handles)
+function [handles,intGperL] = PlotGperL(handles,intSlider)
     arrGperL = handles.Stats.GperL;
     for i = 1:length(arrGperL)
         intGperL(i,1) = arrGperL{i}(1); %#ok<AGROW>
         intGperL(i,2) = arrGperL{i}(2); %#ok<AGROW>
     end
     plot(intGperL(:,1),intGperL(:,2));
-
-    dblXLim = get(handles.axeGperL,'XLim');
     
     % Plots the average of the g/L so far as a red line
     hold on
     if isfield(handles,'intEnd')
-        if dblXLim(2) > handles.intEnd
-            dblXLim(2) = handles.intEnd;
+        if intSlider > handles.intEnd
+            intSlider = handles.intEnd;
         end
-        index = round(dblXLim(2)) - handles.intStart + 1;
+        index = round(intSlider) - handles.intStart + 1;
         plot(intGperL(:,1),ones(i,1)*handles.Stats.avgGperL(index),'r');
         plot(intGperL(:,1),ones(i,1)*handles.Stats.localAvgGperL(index),'g');
     else
