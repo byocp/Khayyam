@@ -193,10 +193,12 @@ function sldHistorical_Callback(hObject, ~, handles) %#ok<DEFNU>
         xlim([intSlider - intRange, intSlider]);
         set(handles.txtXRangeLow,'String',intSlider - intRange);
         set(handles.txtXRangeHigh,'String',intSlider);
+        [handles,~] = PlotGperL(handles);
     else
         xlim([1, intRange]);
         set(handles.txtXRangeLow,'String',1);
         set(handles.txtXRangeHigh,'String',intRange);
+        [handles,~] = PlotGperL(handles);
     end
     dblYLim = get(handles.axeGperL,'YLim');
     set(handles.txtYRangeLow,'String',dblYLim(1));
@@ -386,6 +388,7 @@ function [handles,intGperL] = PlotGperL(handles)
     end
     hold off
 end
+
 %% Not Used
 % This section contains all the functions that are not used, but has been
 % in the past and has potential to be used in the future
