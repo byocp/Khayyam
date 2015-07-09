@@ -1,11 +1,14 @@
 %% Notes
-% moving avg size (Done in PLC?)
 % Save photos from camera sampling?
 % g/L plot will have a line joining the current point to a point from 500
 %     points ago due to limiting the cell size to be 500 for memory purposes,
 %     though really the memory should be ok even if it's not done. But probably
 %     a good idea to do it as is, not a huge deal since the final thing won't
 %     be on matlab anyway
+% Remove Static might remove too much if there are too many particles,
+%   check viability of setting compare every 100 images or so? How to make
+%   sure that the image captured isn't densely populated? min of last 100
+%   images maybe?
 
 %% Code Notes (for Ronan)
 % 'set' function sets the property of an object
@@ -701,7 +704,12 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
     strTimeFile = sprintf('%u_%u_%u_%u_%u_%2.2f',intTime);
     
     while (get(hObject,'Value'))
-%       Get image capture parameters
+        % Sets the last image to be used for removing static objects
+        if isfield(handles,'imgRaw')
+            handles.imgCompare = handles.imgRaw;
+        end
+        
+        % Get image capture parameters
         dblExposure = getBoxVal(handles.txtExposure);
         dblGain = getBoxVal(handles.txtGain);
         dblGamma = getBoxVal(handles.txtGamma);
@@ -713,9 +721,9 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
             return;
         end
         
-        % Simulated continuous capture, used for troubleshooting without a
-        % camera
-%         handles.imgRaw = imread(['D:\Users\Kepstrum\Desktop\Test\' num2str(mod(handles.Counter-1,3)+1) '.png']);
+%         % Simulated continuous capture, used for troubleshooting without a
+%         % camera
+%         handles.imgRaw = imread(['D:\Users\Kepstrum\Desktop\Projects\152\VisionSensorConfig\Saved Data\2015_7_1_14_33_10.69\' num2str(mod(handles.Counter-1,220)+1) 'Raw.png']);
     
         % Set image to grayscale
         if size(handles.imgRaw,3) == 3
@@ -1229,6 +1237,7 @@ function handles = PlotStats(varargin)
             intGperL(i,1) = arrGperL{i}(1); %#ok<AGROW>
             intGperL(i,2) = arrGperL{i}(2); %#ok<AGROW>
         end
+        
         plot(intGperL(:,1),intGperL(:,2));
         
         % Plots the average of the g/L so far as a red line
