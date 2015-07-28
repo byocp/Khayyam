@@ -802,6 +802,17 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
+        %%% Save to csv for PLC to read
+        strDesktop = [getenv('USERPROFILE') '\Desktop\'];
+        bins = histc(handles.Stats.Diameters{mod(handles.Counter-1,500)+1}{3},0:0.1:3.5);
+        formatSpec = '%d,';
+        formatSpec = repmat(formatSpec,1,length(bins)-1);
+        formatSpec = ['%2.6f,' formatSpec '%d\r\n']; %#ok<AGROW>
+        fidPLC = fopen([strDesktop 'MATLAB2PLC.csv'],'a');
+        fprintf(fidPLC,formatSpec,handles.Stats.GperL{mod(handles.Counter-1,500)+1}(2),bins);
+        fclose(fidPLC);
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
         % Increment master counter
         handles.Counter = handles.Counter + 1;
 
