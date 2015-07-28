@@ -57,7 +57,7 @@ function varargout = Config(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 02-Jul-2015 09:47:38
+    % Last Modified by GUIDE v2.5 28-Jul-2015 11:14:22
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -803,12 +803,15 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         %%% Save to csv for PLC to read
-        strDesktop = [getenv('USERPROFILE') '\Desktop\'];
+%         strDesktop = [getenv('USERPROFILE') '\Desktop\'];
         bins = histc(handles.Stats.Diameters{mod(handles.Counter-1,500)+1}{3},0:0.1:3.5);
+        if isempty(bins)
+            bins = zeros(1,36);
+        end
         formatSpec = '%d,';
         formatSpec = repmat(formatSpec,1,length(bins)-1);
         formatSpec = ['%2.6f,' formatSpec '%d\r\n']; %#ok<AGROW>
-        fidPLC = fopen([strDesktop 'MATLAB2PLC.csv'],'a');
+        fidPLC = fopen('C:\VisionSensor\MATLAB2PLC.csv','w');
         fprintf(fidPLC,formatSpec,handles.Stats.GperL{mod(handles.Counter-1,500)+1}(2),bins);
         fclose(fidPLC);
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1171,6 +1174,19 @@ function imgProcessed = ProcessImage(imgRaw, strProcess, varargin)
             if isfield(handles,'imgCompare')
                 imgOld = handles.imgCompare;
                 imgNew = handles.imgRaw;
+                if get(handles.cbCrop,'Value')
+                    % Set crop rectangle
+                    intWidth = floor(getBoxVal(handles.txtCropWidth)/getBoxVal(handles.txtPixelLen));
+                    intHeight = floor(getBoxVal(handles.txtCropHeight)/getBoxVal(handles.txtPixelLen));
+                    intLowerX = max(handles.Param.txtCenterX - floor(intWidth/2),0);
+                    intLowerY = max(handles.Param.txtCenterY - floor(intHeight/2),0);
+
+                    intCropWindow = [intLowerX, intLowerY, intWidth, intHeight];
+
+                    % Crop image
+                    imgOld = imcrop(imgOld,intCropWindow);
+                    imgNew = imcrop(imgNew,intCropWindow);
+                end
                 % Normalize and binary the image for better results
                 if get(handles.cbNormalize,'Value')
                     imgOld = ProcessImage(imgOld,'Normalize');
