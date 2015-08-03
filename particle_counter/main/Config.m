@@ -1,14 +1,11 @@
 %% Notes
-% Save photos from camera sampling?
 % g/L plot will have a line joining the current point to a point from 500
 %     points ago due to limiting the cell size to be 500 for memory purposes,
 %     though really the memory should be ok even if it's not done. But probably
 %     a good idea to do it as is, not a huge deal since the final thing won't
 %     be on matlab anyway
-% Remove Static might remove too much if there are too many particles,
-%   check viability of setting compare every 100 images or so? How to make
-%   sure that the image captured isn't densely populated? min of last 100
-%   images maybe?
+% Ability to save settings changed
+% Resize things for smaller screen
 
 %% Code Notes (for Ronan)
 % 'set' function sets the property of an object
@@ -57,7 +54,7 @@ function varargout = Config(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 28-Jul-2015 11:14:22
+    % Last Modified by GUIDE v2.5 03-Aug-2015 12:16:43
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -673,7 +670,6 @@ end
 % Executes on button press in tglStartPause.
 function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Start/Pause continuous capture
-
     hList = findobj('Parent',handles.pnlContinuous,'Style','checkbox');
 
     if get(hObject,'Value')
@@ -704,6 +700,8 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
     strTimeFile = sprintf('%u_%u_%u_%u_%u_%2.2f',intTime);
     
     while (get(hObject,'Value'))
+        pause(0.01)
+        
         % Sets the last image to be used for removing static objects
         if isfield(handles,'imgRaw')
             handles.imgCompare = handles.imgRaw;
@@ -810,9 +808,9 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
         end
         formatSpec = '%d,';
         formatSpec = repmat(formatSpec,1,length(bins)-1);
-        formatSpec = ['%2.6f,' formatSpec '%d\r\n']; %#ok<AGROW>
+        formatSpec = ['%d,%2.6f,' formatSpec '%d,%f\r\n']; %#ok<AGROW>
         fidPLC = fopen('C:\VisionSensor\MATLAB2PLC.csv','w');
-        fprintf(fidPLC,formatSpec,handles.Stats.GperL{mod(handles.Counter-1,500)+1}(2),bins);
+        fprintf(fidPLC,formatSpec,handles.Counter,handles.Stats.GperL{mod(handles.Counter-1,500)+1}(2),bins,getBoxVal(handles.txtFrameVol));
         fclose(fidPLC);
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
@@ -933,11 +931,13 @@ function btnReview_Callback(hObject, ~, handles) %#ok<DEFNU>
     stcHist = load([handles.dirSave int2str(round(x)) 'Hist.mat'],'savVar');
     stcHist = stcHist.savVar;
     
-    axes(handles.axeRaw);
-    imshow(imgRaw);
-    axes(handles.axeProcessed);
-    imshow(imgProcessed);
-    PlotStats(handles,stcHist);
+    if ~get(handles.tglPausePlot,'Value')
+        axes(handles.axeRaw);
+        imshow(imgRaw);
+        axes(handles.axeProcessed);
+        imshow(imgProcessed);
+        PlotStats(handles,stcHist);
+    end
     
     guidata(hObject,handles);
 end
@@ -1066,13 +1066,15 @@ function handles = plotSample(imgShow, handles, strAxis)
     % plotting to continuous
     switch strAxis
         case 'axeRaw'
-            axes(handles.axeRaw);
-            cla;
-            imshow(imgRaw);
-            
-            axes(handles.axeProcessed);
-            cla;
-            imshow(handles.imgProcessed);
+            if ~get(handles.tglPausePlot,'Value')
+                axes(handles.axeRaw);
+                cla;
+                imshow(imgRaw);
+
+                axes(handles.axeProcessed);
+                cla;
+                imshow(handles.imgProcessed);
+            end
         case 'axeSampleImg'
             axes(handles.axeSampleImg);
     
@@ -1257,7 +1259,9 @@ function handles = PlotStats(varargin)
     handles = varargin{1};
     
     % g/L
-    axes(handles.axeGperL);
+    if ~get(handles.tglPausePlot,'Value')
+        axes(handles.axeGperL);
+    end
     if nargin == 1
         arrGperL = handles.Stats.GperL;
         for i = 1:length(arrGperL)
@@ -1265,25 +1269,31 @@ function handles = PlotStats(varargin)
             intGperL(i,2) = arrGperL{i}(2); %#ok<AGROW>
         end
         
-        plot(intGperL(:,1),intGperL(:,2));
+        if ~get(handles.tglPausePlot,'Value')
+            plot(intGperL(:,1),intGperL(:,2),'Parent',handles.axeGperL);
+        end
         
         % Plots the average of the g/L so far as a red line
-        hold on
-        plot(intGperL(:,1),ones(i,1)*mean(intGperL(:,2)),'r');
-        plot(intGperL(:,1),ones(i,1)*mean(intGperL(max(end-20,1):end,2)),'g');
+        if ~get(handles.tglPausePlot,'Value')
+            hold on
+            plot(intGperL(:,1),ones(i,1)*mean(intGperL(:,2)),'r');
+            plot(intGperL(:,1),ones(i,1)*mean(intGperL(max(end-20,1):end,2)),'g');
+            hold off
+
+            % Only shows the 10 most recent results (use slider to see history)
+            xlabel(handles.axeGperL,'Image #');
+            ylabel(handles.axeGperL,'Grams/Liter');
+            xlim(handles.axeGperL,[handles.Counter - 10, handles.Counter]);
+        end
         handles.Stats.avgGperL(mod(handles.Counter-1,500)+1,:) = [handles.Counter,mean(intGperL(:,2))];
         handles.Stats.localAvgGperL(mod(handles.Counter-1,500)+1,:) = [handles.Counter,mean(intGperL(max(end-20,1):end,2))];
-        hold off
-        
-        % Only shows the 10 most recent results (use slider to see history)
-        xlabel('Image #');
-        ylabel('Grams/Liter');
-        xlim([handles.Counter - 10, handles.Counter]);
     end
     
     % Histogram
-    axes(handles.axeHist);
-    cla;
+    if ~get(handles.tglPausePlot,'Value')
+        axes(handles.axeHist);
+        cla;
+    end
     
     % Histogram bins are determined by the min and max diameteres set in
     % their respective textboxes and each bin size will always be 0.1. If
@@ -1301,10 +1311,12 @@ function handles = PlotStats(varargin)
     if isempty(bins)
         bins = zeros(length(dblMinDiam:0.1:dblMaxDiam),1);
     end
-    bar(dblMinDiam:0.1:dblMaxDiam,bins);
-    xlabel('Particle Diameter [mm]');
-    ylabel('Count');
-    xlim([dblMinDiam, dblMaxDiam]);
+    if ~get(handles.tglPausePlot,'Value')
+        bar(dblMinDiam:0.1:dblMaxDiam,bins);
+        xlabel('Particle Diameter [mm]');
+        ylabel('Count');
+        xlim([dblMinDiam, dblMaxDiam]);
+    end
     % Since the histogram takes a bit of time to process, it will lag
     % behind the other plots. Maybe sync the plotting functions so that
     % they all appear together (aka plot histogram first?)
