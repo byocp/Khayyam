@@ -1,6 +1,0 @@
-Version: 0.0
-Date: Jun. 12, 2015
-Notes:
-	- Initial release to Austria (not exactly)
-	- Compiled hmi.m
-	- Release to Austria does NOT have threshold options in conf.txt

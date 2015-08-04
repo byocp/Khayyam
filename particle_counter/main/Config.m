@@ -54,7 +54,7 @@ function varargout = Config(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 03-Aug-2015 12:16:43
+    % Last Modified by GUIDE v2.5 03-Aug-2015 14:50:12
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -68,28 +68,28 @@ function varargout = Config(varargin)
         gui_State.gui_Callback = str2func(varargin{1});
     end
 
-    try
+%     try
         if nargout
             [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
         else
             gui_mainfcn(gui_State, varargin{:});
         end
-    catch ERROR
-        if ~isdir('ErrorLog')
-            mkdir('ErrorLog')
-        end
-        logError = fopen('ErrorLog\ERROR.txt','a');
-
-        strErrorTime = datestr(now);
-        fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
-                          '%-' int2str(length(ERROR.message)) 's\r\n'...
-                          ],strErrorTime,ERROR.message);
-        strErrorTime = regexprep(strErrorTime,':','');
-        stcMemory = memory; %#ok<NASGU>
-        save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
-
-        fclose(logError);
-    end
+%     catch ERROR
+%         if ~isdir('ErrorLog')
+%             mkdir('ErrorLog')
+%         end
+%         logError = fopen('ErrorLog\ERROR.txt','a');
+% 
+%         strErrorTime = datestr(now);
+%         fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
+%                           '%-' int2str(length(ERROR.message)) 's\r\n'...
+%                           ],strErrorTime,ERROR.message);
+%         strErrorTime = regexprep(strErrorTime,':','');
+%         stcMemory = memory; %#ok<NASGU>
+%         save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
+% 
+%         fclose(logError);
+%     end
 end
 % End initialization code - DO NOT EDIT
 
@@ -640,8 +640,7 @@ function tglConfig_Callback(hObject, ~, handles) %#ok<DEFNU>
     if get(hObject,'Value')
         set(handles.tglContinuous,'Enable','on');
     else
-        set(handles.tglContinuous,'Enable','off');
-        set(handles.tglContinuous,'Value',0);
+        set(handles.tglContinuous,'Enable','off','Value',0);
         guidata(hObject,handles);
     end
     guidata(hObject,handles);
@@ -651,17 +650,25 @@ end
 function tglContinuous_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Expands the HMI to the continuous capture section
 
-    intSize = get(handles.hmiConfig,'Position');
+%     intSize = get(handles.hmiConfig,'Position');
     if get(hObject,'Value')
-        intSize(3) = 270;
-        set(handles.hmiConfig,'Position',intSize);
+%         intSize(3) = 270;
+%         set(handles.hmiConfig,'Position',intSize);
         set(handles.pnlContinuous,'Visible','on')
         set(handles.tglStartPause,'Visible','on','Value',0)
+        set(handles.pnlImageSettings,'Visible','off')
+        set(handles.pnlCalculation,'Visible','off')
+        set(handles.pnlCameraSettings,'Visible','off')
+        set(handles.pnlOtherSettings,'Visible','off')
     else
-        intSize(3) = 133;
-        set(handles.hmiConfig,'Position',intSize);
+%         intSize(3) = 133;
+%         set(handles.hmiConfig,'Position',intSize);
         set(handles.pnlContinuous,'Visible','off')
         set(handles.tglStartPause,'Visible','off')
+        set(handles.pnlImageSettings,'Visible','on')
+        set(handles.pnlCalculation,'Visible','on')
+        set(handles.pnlCameraSettings,'Visible','on')
+        set(handles.pnlOtherSettings,'Visible','on')
     end
     
     guidata(hObject,handles);
@@ -699,9 +706,9 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
     intTime = clock;
     strTimeFile = sprintf('%u_%u_%u_%u_%u_%2.2f',intTime);
     
-    while (get(hObject,'Value'))
+    while get(hObject,'Value')
         pause(0.01)
-        
+
         % Sets the last image to be used for removing static objects
         if isfield(handles,'imgRaw')
             handles.imgCompare = handles.imgRaw;
@@ -951,9 +958,9 @@ function handles = Initialize(handles)
     % and initial states
 
     % Reset the size of the HMI
-    intGUISize = get(handles.hmiConfig,'Position');
-    intGUISize(3) = 133;
-    set(handles.hmiConfig,'Position',intGUISize);
+%     intGUISize = get(handles.hmiConfig,'Position');
+%     intGUISize(3) = 133;
+%     set(handles.hmiConfig,'Position',intGUISize);
     
     % handles.Param and ParamC used to be meant for exporting config
     % settings to the main program, but is now not used since this is the
