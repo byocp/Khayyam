@@ -68,28 +68,29 @@ function varargout = Config(varargin)
         gui_State.gui_Callback = str2func(varargin{1});
     end
 
-%     try
+    try
         if nargout
             [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
         else
             gui_mainfcn(gui_State, varargin{:});
         end
-%     catch ERROR
-%         if ~isdir('ErrorLog')
-%             mkdir('ErrorLog')
-%         end
-%         logError = fopen('ErrorLog\ERROR.txt','a');
-% 
-%         strErrorTime = datestr(now);
-%         fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
-%                           '%-' int2str(length(ERROR.message)) 's\r\n'...
-%                           ],strErrorTime,ERROR.message);
-%         strErrorTime = regexprep(strErrorTime,':','');
-%         stcMemory = memory; %#ok<NASGU>
-%         save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
-% 
-%         fclose(logError);
-%     end
+    catch ERROR
+        if ~isdir('ErrorLog')
+            mkdir('ErrorLog')
+        end
+        logError = fopen('ErrorLog\ERROR.txt','a');
+
+        strErrorTime = datestr(now);
+        fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
+                          '%-' int2str(length(ERROR.message)) 's\r\n'...
+                          ],strErrorTime,ERROR.message);
+        strErrorTime = regexprep(strErrorTime,':','');
+        stcMemory = memory; %#ok<NASGU>
+        save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
+
+        fclose(logError);
+        errordlg(ERROR.message,'','modal');
+    end
 end
 % End initialization code - DO NOT EDIT
 
@@ -107,14 +108,15 @@ function Config_OpeningFcn(hObject, ~, handles, varargin)
     % Clear MATLAB screen (irrelevant for compiled version)
     clc
     
+    % Adds the path for the Lumenera functions (assuming the folder is in
+    % the same directory)
+    addpath('Lumenera Matlab Driver V2.0.1 NEW 64 Bit')
+    addpath('Supporting Functions')
     % Initialize variables
     % handles is the master data structure for all GUIs made in 'guide', all
     % functions that pass back handles as an output makes changes to said
     % structure and/or is not a native 'guide' function
     handles = Initialize(handles);
-    % Adds the path for the Lumenera functions (assuming the folder is in
-    % the same directory)
-    addpath('Lumenera Matlab Driver V2.0.1 NEW 64 Bit')
     
     % Choose default command line output for Config
     handles.output = hObject;
@@ -143,15 +145,13 @@ function varargout = Config_OutputFcn(hObject, ~, handles)  %#ok<INUSL>
     else
         varargout{1} = handles.Param;
     end
-        
-%     delete(hObject);
-%     clc
 end
 
 % --- Executes when user attempts to close hmiConfig.
 function hmiConfig_CloseRequestFcn(hObject, ~, ~) %#ok<DEFNU>
     % Was used at one point to output data from the HMI, but basically not
     % important anymore (still used)
+    pause(0.01);
     delete(hObject);
     % uiresume;
 end
@@ -165,6 +165,12 @@ end
 function txtCenterX_Callback(hObject, ~, handles) %#ok<DEFNU>
     % If there is a plot in axeSampleImg, then update the center point X
     % coordinate
+    
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
+    
     if ishandle(get(handles.axeSampleImg,'Children'))
         set(handles.hScatter,'XData',getBoxVal(hObject));
         posText = get(handles.hText,'Position');
@@ -173,7 +179,7 @@ function txtCenterX_Callback(hObject, ~, handles) %#ok<DEFNU>
     end
     
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
+    handles = UpdateBoxVal(hObject,handles);
     guidata(hObject, handles);
 end
 
@@ -181,6 +187,12 @@ end
 function txtCenterY_Callback(hObject, ~, handles) %#ok<DEFNU>
     % If there is a plot in axeSampleImg, then update the center point Y
     % coordinate
+    
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
+    
     if ishandle(get(handles.axeSampleImg,'Children'))
         set(handles.hScatter,'YData',getBoxVal(hObject));
         posText = get(handles.hText,'Position');
@@ -189,49 +201,72 @@ function txtCenterY_Callback(hObject, ~, handles) %#ok<DEFNU>
     end
     
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
+    handles = UpdateBoxVal(hObject,handles);
     guidata(hObject, handles);
 end
 
 % Executes when Enter or Tab is pressed
 function txtGain_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Sets the slider for gain to match the value entered in the textbox
+    
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
+    
     set(handles.sldGain,'Value',getBoxVal(hObject));
     
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
+    handles = UpdateBoxVal(hObject,handles);
     guidata(hObject, handles);
 end
 
 % Executes when Enter or Tab is pressed
 function txtGamma_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Sets the slider for gamma to match the value entered in the textbox
+    
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
+    
     set(handles.sldGamma,'Value',getBoxVal(hObject));
     
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
+    handles = UpdateBoxVal(hObject,handles);
     guidata(hObject, handles);
 end
 
 % Executes when Enter or Tab is pressed
 function txtThreshold_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Sets the slider for threshold to match the value entered in the textbox
+    
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
+    
     set(handles.sldThreshold,'Value',getBoxVal(hObject));
 
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = RefreshPlots(handles);
     
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
+    handles = UpdateBoxVal(hObject,handles);
     guidata(hObject, handles);
 end
 
 % Executes when Enter or Tab is pressed
 function txtCropWidth_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Update the image in axeSampleImg with the new cropped width
+    
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
 
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
-    handles = cbCrop_Callback(handles.cbCrop, [], handles);
+    handles = UpdateBoxVal(hObject,handles);
+    handles = RefreshPlots(handles);
     guidata(hObject, handles);
 end
 
@@ -239,9 +274,14 @@ end
 function txtCropHeight_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Update the image in axeSampleImg with the new cropped height
     
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
+    
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
-    handles = cbCrop_Callback(handles.cbCrop, [], handles);
+    handles = UpdateBoxVal(hObject,handles);
+    handles = RefreshPlots(handles);
     guidata(hObject, handles);
 end
 
@@ -256,7 +296,7 @@ function sldGain_Callback(hObject, ~, handles) %#ok<DEFNU>
     set(handles.txtGain,'String',get(hObject,'Value'));
     
     % Update handles structure
-    [~,handles] = getBoxVal(handles.txtGain,handles,handles);
+    [~,handles] = getBoxVal(handles.txtGain,handles);
     guidata(hObject, handles);
 end
 
@@ -277,7 +317,7 @@ function sldThreshold_Callback(hObject, ~, handles) %#ok<DEFNU>
 
     set(handles.txtThreshold,'String',get(hObject,'Value'));
     
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = RefreshPlots(handles);
     
     % Update handles structure
     [~,handles] = getBoxVal(handles.txtThreshold,handles);
@@ -301,10 +341,11 @@ function axeSampleImg_ButtonDownFcn(hObject, ~, ~)
     % Get tag of selected radial button
     strSource = get(get(handles.pnlSource,'SelectedObject'),'Tag');
     
-    % Obsolete (for now)
     if isfield(handles,'imgRaw')
         handles.imgCompare = handles.imgRaw;
-        set(handles.cbFilterStatic,'Enable','on');
+        if get(handles.cbCrop,'Value')
+            handles.imgCompareCropped = handles.imgRawCropped;
+        end
     end
     
     switch strSource
@@ -317,14 +358,14 @@ function axeSampleImg_ButtonDownFcn(hObject, ~, ~)
             handles.imgRaw = automated_frame_capture(dblExposure, dblGain, dblGamma);
             
             if handles.imgRaw == -1
-                errordlg('Error while retrieving picture from camera')
+                errordlg('Error while retrieving picture from camera','','modal')
                 return;
             end
         case 'radFromFile'
             [strFileName, strPath] = uigetfile({'*.jpg;*.bmp;*.png;*.tif','All Image Files'},...
                                                     'Select Image File');
             if ~strFileName
-                errordlg('No file selected')
+                errordlg('No file selected','','modal')
                 return;
             end
             
@@ -340,109 +381,50 @@ function axeSampleImg_ButtonDownFcn(hObject, ~, ~)
     handles.imgRaw = handles.imgRaw ./ 255;
     
     % Plot the image onto axeSampleImg
-    handles = plotSample(handles.imgRaw, handles, 'axeSampleImg');
-    
-    % Enable cropping checkbox
-    set(handles.cbCrop,'Enable','on');
+    handles = RefreshPlots(handles);
     
     % Update handles structure
-    handles = cbCrop_Callback(handles.cbCrop, [], handles);
+    handles = RefreshPlots(handles);
     guidata(handles.axeSampleImg, handles);
 end
 
 % Executes on click
 function handles = cbCrop_Callback(hObject, ~, handles)
     % Crops/uncrops the image depending on the state of the checkbox
-    % Doubles as a refresh function, which is why it's called so often, and
-    % also why it has to pass back the handles structure
 
     % Checks whether there is a plot in axeSampleImg OR whether the Config
     % Ready toggle is on
-    if sum(ishandle(get(handles.axeSampleImg,'Children'))) > 0 || get(handles.tglConfig,'Value') > 0
+    if sum(ishandle(get(handles.axeSampleImg,'Children'))) > 0 || get(handles.tglStartPause,'Value')
         if get(hObject,'Value')     % Checks the state of the checkbox
-            % Enable crop textboxes
-            set(handles.txtCropWidth,'Enable','on')
-            set(handles.txtCropHeight,'Enable','on')
-
             % Set crop rectangle
             intWidth = floor(getBoxVal(handles.txtCropWidth)/getBoxVal(handles.txtPixelLen));
             intHeight = floor(getBoxVal(handles.txtCropHeight)/getBoxVal(handles.txtPixelLen));
             intLowerX = max(handles.Param.txtCenterX - floor(intWidth/2),0);
             intLowerY = max(handles.Param.txtCenterY - floor(intHeight/2),0);
+            
+            % Check to make sure the crop window is valid
+            sizRaw = size(handles.imgRaw);
+            if ((intLowerY-intHeight) < 0) || ((intLowerX+intWidth) > sizRaw(2))
+                errordlg('Crop window is too large for the current image!','','modal');
+                return;
+            end
 
             intCropWindow = [intLowerX, intLowerY, intWidth, intHeight];
 
             % Crop raw image
             handles.imgRawCropped = imcrop(handles.imgRaw,intCropWindow);
 
-            % Update center point
-            set(handles.txtCenterX,'String',floor(intWidth/2));
-            set(handles.txtCenterY,'String',floor(intHeight/2));
-
-            [~,handles] = getBoxVal(handles.txtCenterX,handles);
-            [~,handles] = getBoxVal(handles.txtCenterY,handles);
-
-            % Update capture frame
-            set(handles.txtFrameWidth,'String',getBoxVal(handles.txtCropWidth))
-            set(handles.txtFrameHeight,'String',getBoxVal(handles.txtCropHeight))
-            set(handles.txtFrameVol,'String',getBoxVal(handles.txtCropWidth) * ...
-                                             getBoxVal(handles.txtCropHeight) * ...
-                                             getBoxVal(handles.txtFrameDepth))
-
-            [~,handles] = getBoxVal(handles.txtFrameWidth,handles);
-            [~,handles] = getBoxVal(handles.txtFrameHeight,handles);
-            [~,handles] = getBoxVal(handles.txtFrameVol,handles);
-
-            % Plot cropped image
-            if get(handles.tglStartPause,'Value')
-                handles = plotSample(handles.imgRawCropped, handles, 'axeRaw');
-            else
-                handles = plotSample(handles.imgRawCropped, handles, 'axeSampleImg');
-            end
+            % Update fields affected when cropping
+            handles = CropUpdateFields(handles,intWidth,intHeight);
+            
+            handles = RefreshPlots(handles);
         else
-            set(handles.txtCropWidth,'Enable','off')
-            set(handles.txtCropHeight,'Enable','off')
-
-            % Update center point
-            set(handles.txtCenterX,'String',handles.Param.txtCenterX)
-            set(handles.txtCenterY,'String',handles.Param.txtCenterY)
-
-            % Update capture frame
-            set(handles.txtFrameWidth,'String',handles.Param.txtFrameWidth)
-            set(handles.txtFrameHeight,'String',handles.Param.txtFrameHeight)
-            set(handles.txtFrameVol,'String',handles.Param.txtFrameVol)
-
-            % Plot cropped image
-            if get(handles.tglStartPause,'Value')
-                handles = plotSample(handles.imgRaw, handles, 'axeRaw');
-            else
-                handles = plotSample(handles.imgRaw, handles, 'axeSampleImg');
-            end
+            handles = CropUpdateFields(handles);
+            % Plot/Restore uncropped image
+            handles = RefreshPlots(handles);
         end
-    end
-    
-    % Update handles structure
-    guidata(hObject, handles);
-end
-
-% Executes when selected object is changed in pnlSource.
-function pnlSource_SelectionChangeFcn(hObject, eventdata, handles) %#ok<DEFNU>
-    % Enable/disable certain options depending on the selection (from file
-    % or camera)
-
-    switch get(eventdata.NewValue, 'Tag')
-        case 'radCamera'
-            set(handles.txtGain,'Enable','on')
-            set(handles.txtGamma,'Enable','on')
-            set(handles.txtExposure,'Enable','on')
-            set(handles.sldGain,'Enable','on')
-            set(handles.sldGamma,'Enable','on')
-        case 'radFromFile'
-            set(handles.txtGain,'Enable','off')
-            set(handles.txtGamma,'Enable','off')
-            set(handles.txtExposure,'Enable','off')
-            set(handles.sldGain,'Enable','off')
-            set(handles.sldGamma,'Enable','off')
+    else
+%         warndlg('There is no image to crop, a preview cannot be shown.','','modal');
     end
     
     % Update handles structure
@@ -458,6 +440,11 @@ end
 function txtFrameDepth_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Updates the total volume based on the depth entered (width and height
     % are fixed and assumed true)
+    
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
 
     intFrameVol = getBoxVal(handles.txtFrameWidth) * ...
                   getBoxVal(handles.txtFrameHeight) * ...
@@ -465,8 +452,8 @@ function txtFrameDepth_Callback(hObject, ~, handles) %#ok<DEFNU>
     set(handles.txtFrameVol,'String',intFrameVol);
     
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
-    [~,handles] = getBoxVal(handles.txtFrameVol,handles);
+    handles = UpdateBoxVal(hObject,handles);
+    handles = UpdateBoxVal(handles.txtFrameVol,handles);
     guidata(hObject, handles);
 end
 
@@ -478,6 +465,11 @@ end
 % Executes when Enter or Tab is pressed
 function txtPixelLen_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Updates all fields that depend on the pixel length parameter
+    
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
 
     intPixelLenOld = handles.Param.txtPixelLen;
     intPixelLenNew = getBoxVal(hObject);
@@ -490,11 +482,11 @@ function txtPixelLen_Callback(hObject, ~, handles) %#ok<DEFNU>
                                      getBoxVal(handles.txtFrameDepth));
     
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
-    [~,handles] = getBoxVal(handles.txtFrameWidth,handles);
-    [~,handles] = getBoxVal(handles.txtFrameHeight,handles);
-    [~,handles] = getBoxVal(handles.txtFrameVol,handles);
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = UpdateBoxVal(hObject,handles);
+    handles = UpdateBoxVal(handles.txtFrameWidth,handles);
+    handles = UpdateBoxVal(handles.txtFrameHeight,handles);
+    handles = UpdateBoxVal(handles.txtFrameVol,handles);
+    handles = RefreshPlots(handles);
     guidata(hObject, handles);
 end
 
@@ -508,7 +500,7 @@ function cbOutOfRange_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Changes the status of the checkbox and updates the image
 
     handles = UpdateCBValues(handles, 'cbOutOfRange', get(hObject,'Value'));
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = RefreshPlots(handles);
     guidata(hObject,handles);
 end
 
@@ -524,7 +516,7 @@ function cbBinary_Callback(hObject, ~, handles) %#ok<DEFNU>
     
     if get(hObject,'Value')
         for i = 1:length(hList)
-            if ~strcmp(get(hList(i),'Tag'),{'cbBinary';'cbFilterStatic'})
+            if ~strcmp(get(hList(i),'Tag'),{'cbNormalize';'cbBinary';'cbFilterStatic'})
                 set(hList(i),'Enable','on','Value',handles.imgProcCB.(get(hList(i),'Tag')))
             end
         end
@@ -538,7 +530,7 @@ function cbBinary_Callback(hObject, ~, handles) %#ok<DEFNU>
     end
     
     handles = UpdateCBValues(handles, 'cbBinary', get(hObject,'Value'));
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = RefreshPlots(handles);
     guidata(hObject,handles);
 end
 
@@ -547,7 +539,7 @@ function cbRemoveBorder_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Changes the status of the checkbox and updates the image
     
     handles = UpdateCBValues(handles, 'cbRemoveBorder', get(hObject,'Value'));
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = RefreshPlots(handles);
     guidata(hObject,handles);
 end
 
@@ -565,7 +557,7 @@ function cbRoundness_Callback(hObject, ~, handles) %#ok<DEFNU>
     end
     
     handles = UpdateCBValues(handles, 'cbRoundness', get(hObject,'Value'));
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = RefreshPlots(handles);
     guidata(hObject,handles);
 end
 
@@ -573,9 +565,14 @@ end
 function txtRoundHigh_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Changes the value of the textbox and updates the image
     
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
+    
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = UpdateBoxVal(hObject,handles);
+    handles = RefreshPlots(handles);
     guidata(hObject, handles);
 end
 
@@ -583,9 +580,14 @@ end
 function txtRoundLow_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Changes the value of the textbox and updates the image
     
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
+    
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = UpdateBoxVal(hObject,handles);
+    handles = RefreshPlots(handles);
     guidata(hObject, handles);
 end
 
@@ -593,9 +595,14 @@ end
 function txtMinDiam_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Changes the value of the textbox and updates the image
     
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
+    
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = UpdateBoxVal(hObject,handles);
+    handles = RefreshPlots(handles);
     guidata(hObject, handles);
 end
 
@@ -603,9 +610,14 @@ end
 function txtMaxDiam_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Changes the value of the textbox and updates the image
     
+    if isnan(getBoxVal(hObject))
+        errordlg('The textbox contains an invalid number, please only enter numerical values!','','modal');
+        return;
+    end
+    
     % Update handles structure
-    [~,handles] = getBoxVal(hObject,handles);
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = UpdateBoxVal(hObject,handles);
+    handles = RefreshPlots(handles);
     guidata(hObject, handles);
 end
 
@@ -613,8 +625,12 @@ end
 function cbFilterStatic_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Changes the status of the checkbox and updates the image
     
+    if ~isfield(handles,'imgCompare')
+        warndlg('There is no previous image to compare to, please load another photo if you wish to see the effect. This only affects the first image of the continuous capture','','modal');
+    end
+    
     handles = UpdateCBValues(handles, 'cbFilterStatic', get(hObject,'Value'));
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = RefreshPlots(handles);
     guidata(hObject,handles);
 end
 
@@ -623,7 +639,7 @@ function cbNormalize_Callback(hObject, ~, handles) %#ok<DEFNU>
     % Changes the status of the checkbox and updates the image
     
     handles = UpdateCBValues(handles, 'cbNormalize', get(hObject,'Value'));
-    handles = cbCrop_Callback(handles.cbCrop,[],handles);
+    handles = RefreshPlots(handles);
     guidata(hObject,handles);
 end
 
@@ -638,44 +654,27 @@ function tglConfig_Callback(hObject, ~, handles) %#ok<DEFNU>
     % parameters and is ready for continuous capture
 
     if get(hObject,'Value')
-        set(handles.tglContinuous,'Enable','on');
-    else
-        set(handles.tglContinuous,'Enable','off','Value',0);
-        guidata(hObject,handles);
-    end
-    guidata(hObject,handles);
-end
-
-% Executes on button press in tglContinuous.
-function tglContinuous_Callback(hObject, ~, handles) %#ok<DEFNU>
-    % Expands the HMI to the continuous capture section
-
-%     intSize = get(handles.hmiConfig,'Position');
-    if get(hObject,'Value')
-%         intSize(3) = 270;
-%         set(handles.hmiConfig,'Position',intSize);
         set(handles.pnlContinuous,'Visible','on')
         set(handles.tglStartPause,'Visible','on','Value',0)
+        handles = tglStartPause_Callback(handles.tglStartPause, [], handles);
         set(handles.pnlImageSettings,'Visible','off')
         set(handles.pnlCalculation,'Visible','off')
         set(handles.pnlCameraSettings,'Visible','off')
         set(handles.pnlOtherSettings,'Visible','off')
     else
-%         intSize(3) = 133;
-%         set(handles.hmiConfig,'Position',intSize);
         set(handles.pnlContinuous,'Visible','off')
         set(handles.tglStartPause,'Visible','off')
         set(handles.pnlImageSettings,'Visible','on')
         set(handles.pnlCalculation,'Visible','on')
         set(handles.pnlCameraSettings,'Visible','on')
         set(handles.pnlOtherSettings,'Visible','on')
+        guidata(hObject,handles);
     end
-    
     guidata(hObject,handles);
 end
 
 % Executes on button press in tglStartPause.
-function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
+function handles = tglStartPause_Callback(hObject, ~, handles)
     % Start/Pause continuous capture
     hList = findobj('Parent',handles.pnlContinuous,'Style','checkbox');
 
@@ -707,28 +706,32 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
     strTimeFile = sprintf('%u_%u_%u_%u_%u_%2.2f',intTime);
     
     while get(hObject,'Value')
+        % Interupt so that plots show up on the axes
         pause(0.01)
 
         % Sets the last image to be used for removing static objects
         if isfield(handles,'imgRaw')
             handles.imgCompare = handles.imgRaw;
+            if get(handles.cbCrop,'Value')
+                handles.imgCompareCropped = handles.imgRawCropped;
+            end
         end
         
-%         % Get image capture parameters
-%         dblExposure = getBoxVal(handles.txtExposure);
-%         dblGain = getBoxVal(handles.txtGain);
-%         dblGamma = getBoxVal(handles.txtGamma);
-% 
-%         handles.imgRaw = automated_frame_capture(dblExposure, dblGain, dblGamma);
-% 
-%         if handles.imgRaw == -1
-%             errordlg('Error while retrieving picture from camera')
-%             return;
-%         end
+        % Get image capture parameters
+        dblExposure = getBoxVal(handles.txtExposure);
+        dblGain = getBoxVal(handles.txtGain);
+        dblGamma = getBoxVal(handles.txtGamma);
+
+        handles.imgRaw = automated_frame_capture(dblExposure, dblGain, dblGamma);
+
+        if handles.imgRaw == -1
+            errordlg('Error while retrieving picture from camera','','modal')
+            return;
+        end
         
-        % Simulated continuous capture, used for troubleshooting without a
-        % camera
-        handles.imgRaw = imread(['D:\Users\Kepstrum\Desktop\Projects\152\VisionSensorConfig\Saved Data\2015_7_1_14_33_10.69\' num2str(mod(handles.Counter-1,220)+1) 'Raw.png']);
+%         % Simulated continuous capture, used for troubleshooting without a
+%         % camera
+%         handles.imgRaw = imread(['D:\Users\Kepstrum\Desktop\Projects\152\VisionSensorConfig\Saved Data\2015_7_1_14_33_10.69\' num2str(mod(handles.Counter-1,220)+1) 'Raw.png']);
     
         % Set image to grayscale
         if size(handles.imgRaw,3) == 3
@@ -739,7 +742,8 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
         handles.imgRaw = handles.imgRaw ./ 255;
         
         % Refresh/update because next few lines pass in handles
-        handles = cbCrop_Callback(handles.cbCrop,[],handles);
+        handles = cbCrop_Callback(handles.cbCrop, [], handles);
+        handles = RefreshPlots(handles);
         guidata(hObject,handles);
         
         % Get Statistics (particle diameters) for the processed image
@@ -778,7 +782,7 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
         if get(handles.cbSaveRaw, 'Value')
             imwrite(handles.imgRaw,[dirSave int2str(handles.Counter) 'Raw.png'],'png');
             if get(handles.cbCrop, 'Value')
-                imwrite(handles.imgRaw,[dirSave int2str(handles.Counter) 'RawCropped.png'],'png');
+                imwrite(handles.imgRawCropped,[dirSave int2str(handles.Counter) 'RawCropped.png'],'png');
             end
         end
         
@@ -808,17 +812,16 @@ function tglStartPause_Callback(hObject, ~, handles) %#ok<DEFNU>
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         %%% Save to csv for PLC to read
-%         strDesktop = [getenv('USERPROFILE') '\Desktop\'];
-%         bins = histc(handles.Stats.Diameters{mod(handles.Counter-1,500)+1}{3},0:0.1:3.5);
-%         if isempty(bins)
-%             bins = zeros(1,36);
-%         end
-%         formatSpec = '%d,';
-%         formatSpec = repmat(formatSpec,1,length(bins)-1);
-%         formatSpec = ['%d,%2.6f,' formatSpec '%d,%f\r\n']; %#ok<AGROW>
-%         fidPLC = fopen('C:\VisionSensor\MATLAB2PLC.csv','w');
-%         fprintf(fidPLC,formatSpec,handles.Counter,handles.Stats.GperL{mod(handles.Counter-1,500)+1}(2),bins,getBoxVal(handles.txtFrameVol));
-%         fclose(fidPLC);
+        bins = histc(handles.Stats.Diameters{mod(handles.Counter-1,500)+1}{3},0:0.1:3.5);
+        if isempty(bins)
+            bins = zeros(1,36);
+        end
+        formatSpec = '%d,';
+        formatSpec = repmat(formatSpec,1,length(bins)-1);
+        formatSpec = ['%d,%2.6f,' formatSpec '%d,%f\r\n']; %#ok<AGROW>
+        fidPLC = fopen('C:\VisionSensor\MATLAB2PLC.csv','w');
+        fprintf(fidPLC,formatSpec,handles.Counter,handles.Stats.GperL{mod(handles.Counter-1,500)+1}(2),bins,getBoxVal(handles.txtFrameVol));
+        fclose(fidPLC);
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % Increment master counter
@@ -995,324 +998,30 @@ function handles = Initialize(handles)
     guidata(handles.hmiConfig, handles);
 end
 
-% Get double value from textboxes
-function varargout = getBoxVal(varargin)
-    % This function grabs the value in the specified textbox and outputs
-    % its contents in double format
-    % Also doubles as a textbox value update in the handles structure when
-    % varargin{2} is used
-
-    % The textbox object, does not check whether it's a textbox, so don't
-    % use it for other objects
-    hObject = varargin{1};
-    
-    % If varargin{2} is specified, then use it, otherwise generate a local
-    % instance
-    if nargin == 2
-        handles = varargin{2};
-    else
-        handles = guidata(hObject);
-    end
-    
-    % The value of the textbox
-    varargout{1} = str2double(get(hObject,'String'));
-    
-    % Update the appropriate Param (obsolete)
-    switch get(handles.cbCrop,'Value')
-        case 1
-            handles.ParamC.(get(hObject,'Tag')) = varargout{1};
-        case 0
-            handles.Param.(get(hObject,'Tag')) = varargout{1};
-    end
-    
-    % Outputting handles
-    varargout{2} = handles;
-end
-
-% Plots the sample image and the center point
-function handles = plotSample(imgShow, handles, strAxis)
-    % Originally ued to plot in axeSampleImg (hence plotSample) but now is
-    % also used to plot for continuous capture
-
-    % Create the sample of small and big particles according to the current
-    % min/max diameters and pixel length settings
-    imgMinParticle = fspecial('disk',getBoxVal(handles.txtMinDiam) / ...
-                                     getBoxVal(handles.txtPixelLen)/2);
-    imgMinParticle(imgMinParticle>0) = 0.5;
-    imgMaxParticle = fspecial('disk',getBoxVal(handles.txtMaxDiam) / ...
-                                     getBoxVal(handles.txtPixelLen)/2);
-    imgMaxParticle(imgMaxParticle>0) = 0.5;
-    
-    imgRaw = imgShow;
-    % Performs the image processing based on the checkboxes checked, the
-    % order that these go in MATTER, in that having one before the other
-    % affects the outcome
-    if get(handles.cbNormalize,'Value')
-        imgShow = ProcessImage(imgShow,'Normalize');
-    end
-    if get(handles.cbBinary,'Value')
-        imgShow = ProcessImage(imgShow,'bw',getBoxVal(handles.txtThreshold));
-    end
-    if get(handles.cbRemoveBorder,'Value')
-        imgShow = ProcessImage(imgShow,'remBorder');
-    end
-    if get(handles.cbFilterStatic,'Value')
-        imgShow = ProcessImage(imgShow,'Static', handles);
-    end
-    if get(handles.cbOutOfRange,'Value')
-        imgShow = ProcessImage(imgShow,'remOutOfRange',sum(imgMinParticle(:))*2,sum(imgMaxParticle(:))*2);
-    end
-    if get(handles.cbRoundness,'Value')
-        imgShow = ProcessImage(imgShow,'Roundness',handles);
-    end
-    handles.imgProcessed = imgShow;
-    
-    % This is where it differentiates between plotting to sample and
-    % plotting to continuous
-    switch strAxis
-        case 'axeRaw'
-%             axes(handles.axeRaw);
-%             cla;
-            imshow(imgRaw,'Parent',handles.axeRaw);
-
-%             axes(handles.axeProcessed);
-%             cla;
-            imshow(handles.imgProcessed,'Parent',handles.axeProcessed);
-        case 'axeSampleImg'
-            axes(handles.axeSampleImg);
-    
-            cla;
-            hold on;
-            
-            % Add size of small and big particle to image
-            sizMin = size(imgMinParticle);
-            sizMax = size(imgMaxParticle);
-            yOffset1 = floor(size(imgShow,1)/20);
-            yOffset2 = yOffset1 + sizMin(1) + floor(size(imgShow,1)/20);
-            minMaxExample = ones(yOffset2,sizMax(2));
-            minMaxExample(yOffset1:sizMin(1)+yOffset1-1, 1:sizMin(2)) = 1-imgMinParticle;
-            minMaxExample(yOffset2:sizMax(1)+yOffset2-1, 1:sizMax(2)) = 1-imgMaxParticle;
-
-            imshow(imgShow);
-            imshow(minMaxExample);
-
-            text(sizMin(2)+10,sizMin(1)/2+yOffset1, ...
-                 'Min Particle Size', ...
-                 'Color',[1 0 0]);
-            text(sizMax(2)+10,sizMax(1)/2+yOffset2, ...
-                 'Max Particle Size', ...
-                 'Color',[1 0 0]);
-    
-            % Adds the center point on the plot
-            intCenterX = getBoxVal(handles.txtCenterX);
-            intCenterY = getBoxVal(handles.txtCenterY);
-            handles.hScatter = scatter(intCenterX,intCenterY,'*r');
-            intTextY = intCenterY - size(imgShow,1)/20;
-            handles.hText = text(intCenterX,intTextY,'Frame Center',...
-                                 'HorizontalAlignment','center',...
-                                 'Color',[1 0 0]);
-    
-            % Set function handle of this function to plots (children)
-            set(get(handles.axeSampleImg,'Children'),'ButtonDownFcn',@axeSampleImg_ButtonDownFcn);
-    end
-end
-
-% Image processing functions
-function imgProcessed = ProcessImage(imgRaw, strProcess, varargin)
-    % Where all the image processing happens
-
-    switch strProcess
-        case 'Normalize'
-            % Stretch the image intensity to the lower/upper limits
-            % (min->0, max->1)
-            imgProcessed = (imgRaw - min(imgRaw(:))) ./ (max(imgRaw(:))-min(imgRaw(:)));
-        case 'bw'
-            % Change to binary image
-            imgProcessed = im2bw(imgRaw,varargin{1});
-        case 'remOutOfRange'
-            % Remove objects smaller than min diameter and bigger than max
-            % diameter
-            
-            % min
-            imgRaw = ~(bwareaopen(~imgRaw, varargin{1}));
-            
-            % max
-            intTooBig = varargin{2};
-            imgNoBorder = ~(imclearborder(~imgRaw));
-            objBound = bwboundaries(~imgNoBorder,'noholes');
-            RProp = regionprops(~imgNoBorder, 'Area', 'Perimeter');
-            for i = 1:length(objBound)
-                if RProp(i).Area > intTooBig
-                    imgRaw(objBound{i}(:,1),objBound{i}(:,2)) = 1;
-                end
+% Refresh plots
+function handles = RefreshPlots(handles)
+    if get(handles.tglStartPause,'Value')
+        if isfield(handles,'imgRaw')
+            if get(handles.cbCrop,'Value') && isfield(handles,'imgRawCropped')
+                handles = plotContinuous(handles.imgRaw, handles, handles.imgRawCropped);
+            else
+                handles = plotContinuous(handles.imgRaw, handles);
             end
-            
-            imgProcessed = imgRaw;
-        case 'remBorder'
-            % Remove anything touching the edge of the screen and
-            % everything connected to itborders
-            imgProcessed = ~(imclearborder(~imgRaw));
-        case 'Roundness'
-            % Check for roundness of the particle, small particles actually
-            % have a roundness up to 1.3 (due to digitalization) so that's
-            % why the setting is at 1.3.  I know this was originally meant
-            % for bubbles but we don't have that problem here and this
-            % isn't the best way to do it. But what this function will do
-            % is remove any long scratch marks or fibers like before
-            handles = varargin{1};
-            objBound = bwboundaries(~imgRaw,'noholes');
-            RProp = regionprops(~imgRaw, 'Area', 'Perimeter');
-            for i = 1:length(objBound)
-                isRound = 4 * pi * RProp(i).Area / RProp(i).Perimeter^2;
-                if isRound < getBoxVal(handles.txtRoundLow) || isRound > getBoxVal(handles.txtRoundHigh)
-                    imgRaw(objBound{i}(:,1),objBound{i}(:,2)) = 1;
-                end
-            end
-            
-            imgProcessed = imgRaw;
-        case 'Static'
-            % Compares the current image with the previous image and
-            % removes any objects that are detected in the same location
-            % (won't be a huge issue on imparing particle detection unless
-            % you're above 10g/L or so
-            handles = varargin{1};
-            if isfield(handles,'imgCompare')
-                imgOld = handles.imgCompare;
-                imgNew = handles.imgRaw;
-                if get(handles.cbCrop,'Value')
-                    % Set crop rectangle
-                    intWidth = floor(getBoxVal(handles.txtCropWidth)/getBoxVal(handles.txtPixelLen));
-                    intHeight = floor(getBoxVal(handles.txtCropHeight)/getBoxVal(handles.txtPixelLen));
-                    intLowerX = max(handles.Param.txtCenterX - floor(intWidth/2),0);
-                    intLowerY = max(handles.Param.txtCenterY - floor(intHeight/2),0);
-
-                    intCropWindow = [intLowerX, intLowerY, intWidth, intHeight];
-
-                    % Crop image
-                    imgOld = imcrop(imgOld,intCropWindow);
-                    imgNew = imcrop(imgNew,intCropWindow);
-                end
-                % Normalize and binary the image for better results
-                if get(handles.cbNormalize,'Value')
-                    imgOld = ProcessImage(imgOld,'Normalize');
-                    imgNew = ProcessImage(imgNew,'Normalize');
-                end
-                imgOld = im2bw(imgOld, getBoxVal(handles.txtThreshold));
-                imgNew = im2bw(imgNew, getBoxVal(handles.txtThreshold));
-                
-                % Compare and erase static objects from the current image
-                binCompare = imgNew - imgOld;
-                imgRaw(binCompare == 0) = max(imgRaw(:));
-                imgProcessed = imgRaw;
-            end
-    end
-    % If no image processing is actually done, return the old image
-    if ~exist('imgProcessed','var')
-        imgProcessed = imgRaw;
-    end
-end
-
-% Update checkbox values to handles
-function handles = UpdateCBValues(handles, strCBTag, binValue)
-    % This function updates the checkbox values, used for toggling cbBinary
-    
-    handles.Param.(strCBTag) = binValue;
-    handles.ParamC.(strCBTag) = binValue;
-    handles.imgProcCB.(strCBTag) = binValue;
-end
-
-% Get processed image statistics
-function handles = ProcImgStats(handles)
-    % This function gets the statistics (particle diameters) of the
-    % processed image
-
-    imgProcessed = ~handles.imgProcessed;
-    RProp = regionprops(imgProcessed, 'EquivDiameter');
-    
-    % Calculating g/L
-    intSumVol = 0;
-    arrDiam = [];
-    for i = 1:length(RProp)
-        dblDiam = RProp(i).EquivDiameter * getBoxVal(handles.txtPixelLen);
-        intSumVol = intSumVol + 4/3*pi*(dblDiam/2)^3;
-        
-        arrDiam(end+1) = dblDiam; %#ok<AGROW>
-    end
-    
-    % GperL is a cell structure, where each cell contains the index and the
-    % g/L value in an array
-    handles.Stats.GperL{mod(handles.Counter-1,500)+1} = ...
-            [handles.Counter,intSumVol / 10^3 * ...
-            getBoxVal(handles.txtDensity) / ...
-            (getBoxVal(handles.txtFrameVol) / 10^3 / 1000)];
-    
-    % Diameters is a cell structure, where each cell contains the index,
-    % system time, and the full list of diameters in a cell format. The
-    % diameters themselves are stored in an array
-    intTime = clock;
-    strTime = sprintf('%u_%u_%u_%u_%u_%2.2f',intTime);
-    handles.Stats.Diameters{mod(handles.Counter-1,500)+1} = ...
-            {handles.Counter,strTime,arrDiam};
-end
-
-% Plot image statistics
-function handles = PlotStats(varargin)
-    % Plots the g/L and histogram
-
-    handles = varargin{1};
-    
-    % g/L
-%     axes(handles.axeGperL);
-    if nargin == 1
-        arrGperL = handles.Stats.GperL;
-        for i = 1:length(arrGperL)
-            intGperL(i,1) = arrGperL{i}(1); %#ok<AGROW>
-            intGperL(i,2) = arrGperL{i}(2); %#ok<AGROW>
         end
-        
-        plot(intGperL(:,1),intGperL(:,2),'Parent',handles.axeGperL);
-        
-        % Plots the average of the g/L so far as a red line
-        hold(handles.axeGperL,'on')
-        plot(intGperL(:,1),ones(i,1)*mean(intGperL(:,2)),'r','Parent',handles.axeGperL);
-        plot(intGperL(:,1),ones(i,1)*mean(intGperL(max(end-20,1):end,2)),'g','Parent',handles.axeGperL);
-        hold(handles.axeGperL,'off')
-
-        % Only shows the 10 most recent results (use slider to see history)
-        xlabel(handles.axeGperL,'Image #');
-        ylabel(handles.axeGperL,'Grams/Liter');
-        xlim(handles.axeGperL,[handles.Counter - 10, handles.Counter]);
-        handles.Stats.avgGperL(mod(handles.Counter-1,500)+1,:) = [handles.Counter,mean(intGperL(:,2))];
-        handles.Stats.localAvgGperL(mod(handles.Counter-1,500)+1,:) = [handles.Counter,mean(intGperL(max(end-20,1):end,2))];
-    end
-    
-    % Histogram
-%     axes(handles.axeHist);
-%     cla;
-    
-    % Histogram bins are determined by the min and max diameteres set in
-    % their respective textboxes and each bin size will always be 0.1. If
-    % max is not exactly 0.1*n away from min, then the closest 0.1*n value
-    % below max will be the biggest bin size cutoff
-    dblMinDiam = getBoxVal(handles.txtMinDiam);
-    dblMaxDiam = getBoxVal(handles.txtMaxDiam);
-    if nargin == 1
-        bins = histc(handles.Stats.Diameters{mod(handles.Counter-1,500)+1}{3},dblMinDiam:0.1:dblMaxDiam);
-        set(handles.lblTimeStamp,'String',handles.Stats.Diameters{mod(handles.Counter-1,500)+1}{2});
     else
-        bins = histc(varargin{2}{3},dblMinDiam:0.1:dblMaxDiam);
-        set(handles.lblTimeStamp,'String',varargin{2}{2});
+        if get(handles.cbCrop,'Value')
+            if isfield(handles,'imgRawCropped')
+                handles = plotSample(handles.imgRawCropped, handles);
+            end
+        else
+            if isfield(handles,'imgRaw')
+                handles = plotSample(handles.imgRaw, handles);
+            end
+        end
+
+        % Set function handle of this function to plots (children)
+        set(get(handles.axeSampleImg,'Children'),'ButtonDownFcn',@axeSampleImg_ButtonDownFcn);
     end
-    if isempty(bins)
-        bins = zeros(length(dblMinDiam:0.1:dblMaxDiam),1);
-    end
-    bar(handles.axeHist,dblMinDiam:0.1:dblMaxDiam,bins);
-    xlabel(handles.axeHist,'Particle Diameter [mm]');
-    ylabel(handles.axeHist,'Count');
-    xlim(handles.axeHist,[dblMinDiam, dblMaxDiam]);
-    % Since the histogram takes a bit of time to process, it will lag
-    % behind the other plots. Maybe sync the plotting functions so that
-    % they all appear together (aka plot histogram first?)
 end
 
 %% Not Used
