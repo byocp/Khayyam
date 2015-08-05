@@ -5,7 +5,7 @@
 % This section contains all the functions automatically generated when the
 % GUI is created
 
-function varargout = ConfigReview(varargin)
+function varargout = VisionReview(varargin)
     % Biye's notes: This function is automatically generated with MATLAB's
     % 'guide' whenever you make a new GUI.  The only thing I added here is
     % the error check because all errors regress to this initial function.
@@ -34,14 +34,14 @@ function varargout = ConfigReview(varargin)
 
     % Edit the above text to modify the response to help Config
 
-    % Last Modified by GUIDE v2.5 02-Jul-2015 15:37:03
+    % Last Modified by GUIDE v2.5 05-Aug-2015 12:39:00
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
     gui_State = struct('gui_Name',       mfilename, ...
                        'gui_Singleton',  gui_Singleton, ...
-                       'gui_OpeningFcn', @ConfigReview_OpeningFcn, ...
-                       'gui_OutputFcn',  @ConfigReview_OutputFcn, ...
+                       'gui_OpeningFcn', @VisionReview_OpeningFcn, ...
+                       'gui_OutputFcn',  @VisionReview_OutputFcn, ...
                        'gui_LayoutFcn',  [] , ...
                        'gui_Callback',   []);
     if nargin && ischar(varargin{1})
@@ -74,7 +74,7 @@ end
 % End initialization code - DO NOT EDIT
 
 % --- Executes just before Config is made visible.
-function ConfigReview_OpeningFcn(hObject, ~, handles, varargin)
+function VisionReview_OpeningFcn(hObject, ~, handles, varargin)
     % Biye's notes: This function executes when the HMI instance is
     % created.
 
@@ -104,7 +104,7 @@ function ConfigReview_OpeningFcn(hObject, ~, handles, varargin)
 end
 
 % --- Outputs from this function are returned to the command line.
-function varargout = ConfigReview_OutputFcn(hObject, ~, ~)
+function varargout = VisionReview_OutputFcn(hObject, ~, ~)
     % Biye's notes: This function is used if you need to output anything
     % from the HMI to the outside (for example if another function calls
     % this HMI). Currently not used since this function is standalone

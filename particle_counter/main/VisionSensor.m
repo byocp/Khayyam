@@ -25,77 +25,77 @@
 % This section contains all the functions automatically generated when the
 % GUI is created
 
-function varargout = Config(varargin)
+function varargout = VisionSensor(varargin)
     % Biye's notes: This function is automatically generated with MATLAB's
     % 'guide' whenever you make a new GUI.  The only thing I added here is
     % the error check because all errors regress to this initial function.
     % I wouldn't change much in here.
 
-    % CONFIG MATLAB code for Config.fig
-    %      CONFIG, by itself, creates a new CONFIG or raises the existing
+    % VISIONSENSOR MATLAB code for VisionSensor.fig
+    %      VISIONSENSOR, by itself, creates a new VISIONSENSOR or raises the existing
     %      singleton*.
     %
-    %      H = CONFIG returns the handle to a new CONFIG or the handle to
+    %      H = VISIONSENSOR returns the handle to a new VISIONSENSOR or the handle to
     %      the existing singleton*.
     %
-    %      CONFIG('CALLBACK',hObject,eventData,handles,...) calls the local
-    %      function named CALLBACK in CONFIG.M with the given input arguments.
+    %      VISIONSENSOR('CALLBACK',hObject,eventData,handles,...) calls the local
+    %      function named CALLBACK in VISIONSENSOR.M with the given input arguments.
     %
-    %      CONFIG('Property','Value',...) creates a new CONFIG or raises the
+    %      VISIONSENSOR('Property','Value',...) creates a new VISIONSENSOR or raises the
     %      existing singleton*.  Starting from the left, property value pairs are
-    %      applied to the GUI before Config_OpeningFcn gets called.  An
+    %      applied to the GUI before VisionSensor_OpeningFcn gets called.  An
     %      unrecognized property name or invalid value makes property application
-    %      stop.  All inputs are passed to Config_OpeningFcn via varargin.
+    %      stop.  All inputs are passed to VisionSensor_OpeningFcn via varargin.
     %
     %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
     %      instance to run (singleton)".
     %
     % See also: GUIDE, GUIDATA, GUIHANDLES
 
-    % Edit the above text to modify the response to help Config
+    % Edit the above text to modify the response to help VisionSensor
 
-    % Last Modified by GUIDE v2.5 03-Aug-2015 14:50:12
+    % Last Modified by GUIDE v2.5 05-Aug-2015 12:38:22
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
     gui_State = struct('gui_Name',       mfilename, ...
                        'gui_Singleton',  gui_Singleton, ...
-                       'gui_OpeningFcn', @Config_OpeningFcn, ...
-                       'gui_OutputFcn',  @Config_OutputFcn, ...
+                       'gui_OpeningFcn', @VisionSensor_OpeningFcn, ...
+                       'gui_OutputFcn',  @VisionSensor_OutputFcn, ...
                        'gui_LayoutFcn',  [] , ...
                        'gui_Callback',   []);
     if nargin && ischar(varargin{1})
         gui_State.gui_Callback = str2func(varargin{1});
     end
 
-    try
+%     try
         if nargout
             [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
         else
             gui_mainfcn(gui_State, varargin{:});
         end
-    catch ERROR
-        if ~isdir('ErrorLog')
-            mkdir('ErrorLog')
-        end
-        logError = fopen('ErrorLog\ERROR.txt','a');
-
-        strErrorTime = datestr(now);
-        fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
-                          '%-' int2str(length(ERROR.message)) 's\r\n'...
-                          ],strErrorTime,ERROR.message);
-        strErrorTime = regexprep(strErrorTime,':','');
-        stcMemory = memory; %#ok<NASGU>
-        save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
-
-        fclose(logError);
-        errordlg(ERROR.message,'','modal');
-    end
+%     catch ERROR
+%         if ~isdir('ErrorLog')
+%             mkdir('ErrorLog')
+%         end
+%         logError = fopen('ErrorLog\ERROR.txt','a');
+% 
+%         strErrorTime = datestr(now);
+%         fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
+%                           '%-' int2str(length(ERROR.message)) 's\r\n'...
+%                           ],strErrorTime,ERROR.message);
+%         strErrorTime = regexprep(strErrorTime,':','');
+%         stcMemory = memory; %#ok<NASGU>
+%         save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
+% 
+%         fclose(logError);
+%         errordlg(ERROR.message,'','modal');
+%     end
 end
 % End initialization code - DO NOT EDIT
 
-% --- Executes just before Config is made visible.
-function Config_OpeningFcn(hObject, ~, handles, varargin)
+% --- Executes just before VisionSensor is made visible.
+function VisionSensor_OpeningFcn(hObject, ~, handles, varargin)
     % Biye's notes: This function executes when the HMI instance is
     % created.
 
@@ -103,7 +103,7 @@ function Config_OpeningFcn(hObject, ~, handles, varargin)
     % hObject    handle to figure
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
-    % varargin   command line arguments to Config (see VARARGIN)
+    % varargin   command line arguments to VisionSensor (see VARARGIN)
     
     % Clear MATLAB screen (irrelevant for compiled version)
     clc
@@ -112,24 +112,29 @@ function Config_OpeningFcn(hObject, ~, handles, varargin)
     % the same directory)
     addpath('Lumenera Matlab Driver V2.0.1 NEW 64 Bit')
     addpath('Supporting Functions')
+    
+    if nargin > 3 && isstruct(varargin{1})
+        handles.Load = varargin{1};
+    end
+    
     % Initialize variables
     % handles is the master data structure for all GUIs made in 'guide', all
     % functions that pass back handles as an output makes changes to said
     % structure and/or is not a native 'guide' function
     handles = Initialize(handles);
     
-    % Choose default command line output for Config
+    % Choose default command line output for VisionSensor
     handles.output = hObject;
 
     % Update handles structure
     guidata(hObject, handles);
 
-    % UIWAIT makes Config wait for user response (see UIRESUME)
+    % UIWAIT makes VisionSensor wait for user response (see UIRESUME)
     % uiwait(handles.hmiConfig);
 end
 
 % --- Outputs from this function are returned to the command line.
-function varargout = Config_OutputFcn(hObject, ~, handles)  %#ok<INUSL>
+function varargout = VisionSensor_OutputFcn(hObject, ~, handles)  %#ok<INUSL>
     % Biye's notes: This function is used if you need to output anything
     % from the HMI to the outside (for example if another function calls
     % this HMI). Currently not used since this function is standalone
@@ -296,7 +301,7 @@ function sldGain_Callback(hObject, ~, handles) %#ok<DEFNU>
     set(handles.txtGain,'String',get(hObject,'Value'));
     
     % Update handles structure
-    [~,handles] = getBoxVal(handles.txtGain,handles);
+    handles = UpdateBoxVal(handles.txtGain,handles);
     guidata(hObject, handles);
 end
 
@@ -307,7 +312,7 @@ function sldGamma_Callback(hObject, ~, handles) %#ok<DEFNU>
     set(handles.txtGamma,'String',get(hObject,'Value'));
     
     % Update handles structure
-    [~,handles] = getBoxVal(handles.txtGamma,handles);
+    handles = UpdateBoxVal(handles.txtGamma,handles);
     guidata(hObject, handles);
 end
 
@@ -320,7 +325,7 @@ function sldThreshold_Callback(hObject, ~, handles) %#ok<DEFNU>
     handles = RefreshPlots(handles);
     
     % Update handles structure
-    [~,handles] = getBoxVal(handles.txtThreshold,handles);
+    handles = UpdateBoxVal(handles.txtThreshold,handles);
     guidata(hObject, handles);
 end
 
@@ -392,7 +397,7 @@ end
 function handles = cbCrop_Callback(hObject, ~, handles)
     % Crops/uncrops the image depending on the state of the checkbox
 
-    % Checks whether there is a plot in axeSampleImg OR whether the Config
+    % Checks whether there is a plot in axeSampleImg OR whether the VisionSensor
     % Ready toggle is on
     if sum(ishandle(get(handles.axeSampleImg,'Children'))) > 0 || get(handles.tglStartPause,'Value')
         if get(hObject,'Value')     % Checks the state of the checkbox
@@ -488,6 +493,54 @@ function txtPixelLen_Callback(hObject, ~, handles) %#ok<DEFNU>
     handles = UpdateBoxVal(handles.txtFrameVol,handles);
     handles = RefreshPlots(handles);
     guidata(hObject, handles);
+end
+
+% --- Executes on button press in btnSave.
+function btnSave_Callback(~, ~, ~) %#ok<DEFNU>
+    if ~isdir('Saved Projects')
+        mkdir('Saved Projects')
+    end
+    
+    i = 1;
+    while ~exist('ERR','var')
+        try
+            load(['Saved Projects\ProjectSave' int2str(i) '.mat']);
+        catch ERR %#ok<NASGU>
+        end
+        i = i+1;
+    end
+    i = i-1;
+    clear ERR
+    
+    [strFileName,strPath,~] = uiputfile('*.mat','Save Project',['Saved Projects\ProjectSave' int2str(i) '.mat']);
+    if ~strFileName
+        errordlg('No file selected','','modal')
+        return;
+    end
+    
+    hAllTxt = findobj('Style','edit');
+    hAllCb = findobj('Style','checkbox');
+    hAllSlider = findobj('Style','slider');
+    
+    stcSave = struct('Textbox',struct,'Checkbox',struct,'Slider',struct);
+    for i = 1:length(hAllTxt)
+        tag = get(hAllTxt(i),'Tag');
+        if ~strcmp('txtTimeElapsed',tag)
+            stcSave.Textbox.(tag) = get(hAllTxt(i),'String');
+        end
+    end
+    for i = 1:length(hAllCb)
+        tag = get(hAllCb(i),'Tag');
+        stcSave.Checkbox.(tag) = get(hAllCb(i),'Value');
+    end
+    for i = 1:length(hAllSlider)
+        tag = get(hAllSlider(i),'Tag');
+        if ~strcmp('sldHistorical',tag)
+            stcSave.Slider.(tag) = get(hAllSlider(i),'Value');
+        end
+    end
+    
+    save([strPath strFileName],'-struct','stcSave');
 end
 
 %% Image Processing Options
@@ -960,12 +1013,12 @@ function handles = Initialize(handles)
     % Called when HMI is created, initializes 'global' variables (handles)
     % and initial states
 
-    % Reset the size of the HMI
-%     intGUISize = get(handles.hmiConfig,'Position');
-%     intGUISize(3) = 133;
-%     set(handles.hmiConfig,'Position',intGUISize);
+    % Load settings if it exists
+    if isfield(handles,'Load')
+        handles = LoadSettings(handles);
+    end
     
-    % handles.Param and ParamC used to be meant for exporting config
+    % handles.Param and ParamC used to be meant for exporting visionsensor
     % settings to the main program, but is now not used since this is the
     % main program
     hList = findobj('Style','edit');
@@ -1021,6 +1074,24 @@ function handles = RefreshPlots(handles)
 
         % Set function handle of this function to plots (children)
         set(get(handles.axeSampleImg,'Children'),'ButtonDownFcn',@axeSampleImg_ButtonDownFcn);
+    end
+end
+
+function handles = LoadSettings(handles)
+    Textboxes = fieldnames(handles.Load.Textbox);
+    for i = 1:length(Textboxes)
+        set(eval(['handles.' Textboxes{i}]),'String', ...
+            eval(['handles.Load.Textbox.' Textboxes{i}]));
+    end
+    Checkboxes = fieldnames(handles.Load.Checkbox);
+    for i = 1:length(Checkboxes)
+        set(eval(['handles.' Checkboxes{i}]),'Value', ...
+            eval(['handles.Load.Checkbox.' Checkboxes{i}]));
+    end
+    Sliders = fieldnames(handles.Load.Slider);
+    for i = 1:length(Sliders)
+        set(eval(['handles.' Sliders{i}]),'Value', ...
+            eval(['handles.Load.Slider.' Sliders{i}]));
     end
 end
 
