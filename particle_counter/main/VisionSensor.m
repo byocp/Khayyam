@@ -749,7 +749,8 @@ function handles = tglStartPause_Callback(hObject, ~, handles)
         set(hObject,'String','Start');
         set(hList,'Enable','on');
         set(handles.sldHistorical,'Visible','on');
-        if ishandle(get(handles.axeGperL,'Children'))
+        hList = findobj('Parent',handles.pnlContinuous,'Style','checkbox');
+        if ishandle(get(handles.axeGperL,'Children')) && sum(cell2mat(get(hList,'Value'))) == 4
             set(handles.btnReview,'Visible','on');
         end
     end
