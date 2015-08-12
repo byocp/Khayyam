@@ -39,7 +39,16 @@ function handles = PlotStats(varargin)
         ylabel(handles.axeGperL,'Grams/Liter');
         xlim(handles.axeGperL,[handles.Counter - 10, handles.Counter]);
         handles.Stats.avgGperL(mod(handles.Counter-1,500)+1,:) = [handles.Counter,mean(intGperL(:,2))];
-        handles.Stats.localAvgGperL(mod(handles.Counter-1,500)+1,:) = [handles.Counter,mean(intGperL(max(end-20,1):end,2))];
+        if handles.Counter > 500
+            index = mod(handles.Counter-1,500)+1;
+            if index < 20
+                handles.Stats.localAvgGperL(index,:) = [handles.Counter,mean([intGperL(500-(19-index):500,2);intGperL(1:index,2)])];
+            else
+                handles.Stats.localAvgGperL(index,:) = [handles.Counter,mean(intGperL(index-19,1:index,2))];
+            end
+        else
+            handles.Stats.localAvgGperL(mod(handles.Counter-1,500)+1,:) = [handles.Counter,mean(intGperL(max(end-19,1):end,2))];
+        end
     end
     
     % Histogram
