@@ -68,29 +68,29 @@ function varargout = VisionSensor(varargin)
         gui_State.gui_Callback = str2func(varargin{1});
     end
 
-%     try
+    try
         if nargout
             [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
         else
             gui_mainfcn(gui_State, varargin{:});
         end
-%     catch ERROR
-%         if ~isdir('ErrorLog')
-%             mkdir('ErrorLog')
-%         end
-%         logError = fopen('ErrorLog\ERROR.txt','a');
-% 
-%         strErrorTime = datestr(now);
-%         fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
-%                           '%-' int2str(length(ERROR.message)) 's\r\n'...
-%                           ],strErrorTime,ERROR.message);
-%         strErrorTime = regexprep(strErrorTime,':','');
-%         stcMemory = memory; %#ok<NASGU>
-%         save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
-% 
-%         fclose(logError);
-%         errordlg(ERROR.message,'','modal');
-%     end
+    catch ERROR
+        if ~isdir('ErrorLog')
+            mkdir('ErrorLog')
+        end
+        logError = fopen('ErrorLog\ERROR.txt','a');
+
+        strErrorTime = datestr(now);
+        fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
+                          '%-' int2str(length(ERROR.message)) 's\r\n'...
+                          ],strErrorTime,ERROR.message);
+        strErrorTime = regexprep(strErrorTime,':','');
+        stcMemory = memory; %#ok<NASGU>
+        save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
+
+        fclose(logError);
+        errordlg(ERROR.message,'','modal');
+    end
 end
 % End initialization code - DO NOT EDIT
 
@@ -750,7 +750,7 @@ function handles = tglStartPause_Callback(hObject, ~, handles)
         set(hList,'Enable','on');
         set(handles.sldHistorical,'Visible','on');
         hList = findobj('Parent',handles.pnlContinuous,'Style','checkbox');
-        if ishandle(get(handles.axeGperL,'Children')) && sum(cell2mat(get(hList,'Value'))) == 4
+        if ~isempty(get(handles.axeGperL,'Children')) && sum(cell2mat(get(hList,'Value'))) == 4
             set(handles.btnReview,'Visible','on');
         end
     end
