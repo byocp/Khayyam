@@ -832,51 +832,69 @@ function handles = tglStartPause_Callback(hObject, ~, handles)
             mkdir(dirSave)
         end
         
-        % Save raw image
-        if get(handles.cbSaveRaw, 'Value')
-            imwrite(handles.imgRaw,[dirSave int2str(handles.Counter) 'Raw.png'],'png');
-            if get(handles.cbCrop, 'Value')
-                imwrite(handles.imgRawCropped,[dirSave int2str(handles.Counter) 'RawCropped.png'],'png');
+        try
+            % Save raw image
+            if get(handles.cbSaveRaw, 'Value')
+                imwrite(handles.imgRaw,[dirSave int2str(handles.Counter) 'Raw.png'],'png');
+                if get(handles.cbCrop, 'Value')
+                    imwrite(handles.imgRawCropped,[dirSave int2str(handles.Counter) 'RawCropped.png'],'png');
+                end
             end
-        end
-        
-        % Save processed image
-        if get(handles.cbSaveProcessed, 'Value')
-            imwrite(handles.imgProcessed,[dirSave int2str(handles.Counter) 'Processed.png'],'png');
-        end
-        
-        % Save g/L in csv text file
-        if get(handles.cbSaveGperL, 'Value')
-            fidGperL = fopen([dirSave 'GramsPerLiter.txt'], 'a');
-            if handles.Counter == 1
-                fprintf(fidGperL,'%s,%s,%s,%s\r\n','Index','Grams/Liter','Average g/L','Local Average g/L');
+
+            % Save processed image
+            if get(handles.cbSaveProcessed, 'Value')
+                imwrite(handles.imgProcessed,[dirSave int2str(handles.Counter) 'Processed.png'],'png');
             end
-            fprintf(fidGperL,'%d,%2.2f,%2.2f,%2.2f\r\n',handles.Stats.GperL{mod(handles.Counter-1,500)+1}(1), ...
-                                              handles.Stats.GperL{mod(handles.Counter-1,500)+1}(2), ...
-                                              handles.Stats.avgGperL(mod(handles.Counter-1,500)+1,2),...
-                                              handles.Stats.localAvgGperL(mod(handles.Counter-1,500)+1,2));
-            fclose(fidGperL);
-        end
         
-        % Save list of particle diameters used for the histogram
-        if get(handles.cbSaveHist, 'Value')
-            savVar = handles.Stats.Diameters{mod(handles.Counter-1,500)+1}; %#ok<NASGU>
-            save([dirSave int2str(handles.Counter) 'Hist'], 'savVar');
+            % Save g/L in csv text file
+            if get(handles.cbSaveGperL, 'Value')
+                fidGperL = fopen([dirSave 'GramsPerLiter.txt'], 'a');
+                if handles.Counter == 1
+                    fprintf(fidGperL,'%s,%s,%s,%s\r\n','Index','Grams/Liter','Average g/L','Local Average g/L');
+                end
+                fprintf(fidGperL,'%d,%2.2f,%2.2f,%2.2f\r\n',handles.Stats.GperL{mod(handles.Counter-1,500)+1}(1), ...
+                                                  handles.Stats.GperL{mod(handles.Counter-1,500)+1}(2), ...
+                                                  handles.Stats.avgGperL(mod(handles.Counter-1,500)+1,2),...
+                                                  handles.Stats.localAvgGperL(mod(handles.Counter-1,500)+1,2));
+                fclose(fidGperL);
+            end
+
+            % Save list of particle diameters used for the histogram
+            if get(handles.cbSaveHist, 'Value')
+                savVar = handles.Stats.Diameters{mod(handles.Counter-1,500)+1}; %#ok<NASGU>
+                save([dirSave int2str(handles.Counter) 'Hist'], 'savVar');
+            end
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+            %%% Save to csv for PLC to read
+            bins = histc(handles.Stats.Diameters{mod(handles.Counter-1,500)+1}{3},0:0.1:3.5);
+            if isempty(bins)
+                bins = zeros(1,36);
+            end
+            formatSpec = '%d,';
+            formatSpec = repmat(formatSpec,1,length(bins)-1);
+            formatSpec = ['%d,%2.6f,' formatSpec '%d,%f\r\n']; %#ok<AGROW>
+            fidPLC = fopen('C:\VisionSensor\MATLAB2PLC.csv','w');
+            fprintf(fidPLC,formatSpec,handles.Counter,handles.Stats.GperL{mod(handles.Counter-1,500)+1}(2),bins,getBoxVal(handles.txtFrameVol));
+            fclose(fidPLC);
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        catch ERROR
+            if ~isdir('ErrorLog')
+                mkdir('ErrorLog')
+            end
+            logError = fopen('ErrorLog\ERROR.txt','a');
+
+            strErrorTime = datestr(now);
+            fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
+                              '%-' int2str(length(ERROR.message)) 's\r\n'...
+                              ],strErrorTime,ERROR.message);
+            strErrorTime = regexprep(strErrorTime,':','');
+            stcMemory = memory; %#ok<NASGU>
+            save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
+
+            fclose(logError);
+            errordlg(ERROR.message,'','modal');
         end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
-        %%% Save to csv for PLC to read
-        bins = histc(handles.Stats.Diameters{mod(handles.Counter-1,500)+1}{3},0:0.1:3.5);
-        if isempty(bins)
-            bins = zeros(1,36);
-        end
-        formatSpec = '%d,';
-        formatSpec = repmat(formatSpec,1,length(bins)-1);
-        formatSpec = ['%d,%2.6f,' formatSpec '%d,%f\r\n']; %#ok<AGROW>
-        fidPLC = fopen('C:\VisionSensor\MATLAB2PLC.csv','w');
-        fprintf(fidPLC,formatSpec,handles.Counter,handles.Stats.GperL{mod(handles.Counter-1,500)+1}(2),bins,getBoxVal(handles.txtFrameVol));
-        fclose(fidPLC);
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % Increment master counter
         handles.Counter = handles.Counter + 1;
