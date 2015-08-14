@@ -893,7 +893,7 @@ function handles = tglStartPause_Callback(hObject, ~, handles)
             save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
 
             fclose(logError);
-            errordlg(ERROR.message,'','modal');
+            errordlg(['Image #' int2str(handles.Counter) ' did not capture correctly'],'','modal');
         end
         
         % Increment master counter
