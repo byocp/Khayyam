@@ -497,50 +497,56 @@ end
 
 % --- Executes on button press in btnSave.
 function btnSave_Callback(~, ~, ~) %#ok<DEFNU>
-    if ~isdir('Saved Projects')
-        mkdir('Saved Projects')
-    end
-    
-    i = 1;
-    while ~exist('ERR','var')
-        try
-            load(['Saved Projects\ProjectSave' int2str(i) '.mat']);
-        catch ERR %#ok<NASGU>
+    try
+        if ~isdir('Saved Projects')
+            mkdir('Saved Projects')
         end
-        i = i+1;
-    end
-    i = i-1;
-    clear ERR
-    
-    [strFileName,strPath,~] = uiputfile('*.mat','Save Project',['Saved Projects\ProjectSave' int2str(i) '.mat']);
-    if ~strFileName
-        errordlg('No file selected','','modal')
-        return;
-    end
-    
-    hAllTxt = findobj('Style','edit');
-    hAllCb = findobj('Style','checkbox');
-    hAllSlider = findobj('Style','slider');
-    
-    stcSave = struct('Textbox',struct,'Checkbox',struct,'Slider',struct);
-    for i = 1:length(hAllTxt)
-        tag = get(hAllTxt(i),'Tag');
-        if ~strcmp('txtTimeElapsed',tag)
-            stcSave.Textbox.(tag) = get(hAllTxt(i),'String');
+
+        i = 1;
+        while ~exist('ERR','var')
+            try
+                load(['Saved Projects\ProjectSave' int2str(i) '.mat']);
+            catch ERR %#ok<NASGU>
+            end
+            i = i+1;
         end
-    end
-    for i = 1:length(hAllCb)
-        tag = get(hAllCb(i),'Tag');
-        stcSave.Checkbox.(tag) = get(hAllCb(i),'Value');
-    end
-    for i = 1:length(hAllSlider)
-        tag = get(hAllSlider(i),'Tag');
-        if ~strcmp('sldHistorical',tag)
-            stcSave.Slider.(tag) = get(hAllSlider(i),'Value');
+        i = i-1;
+        clear ERR
+
+        [strFileName,strPath,~] = uiputfile('*.mat','Save Project',['Saved Projects\ProjectSave' int2str(i) '.mat']);
+        if ~strFileName
+            errordlg('No file selected','','modal')
+            return;
         end
+
+        hAllTxt = findobj('Style','edit');
+        hAllCb = findobj('Style','checkbox');
+        hAllSlider = findobj('Style','slider');
+
+        stcSave = struct('Textbox',struct,'Checkbox',struct,'Slider',struct);
+        for i = 1:length(hAllTxt)
+            tag = get(hAllTxt(i),'Tag');
+            if ~strcmp('txtTimeElapsed',tag)
+                stcSave.Textbox.(tag) = get(hAllTxt(i),'String');
+            end
+        end
+        for i = 1:length(hAllCb)
+            tag = get(hAllCb(i),'Tag');
+            stcSave.Checkbox.(tag) = get(hAllCb(i),'Value');
+        end
+        for i = 1:length(hAllSlider)
+            tag = get(hAllSlider(i),'Tag');
+            if ~strcmp('sldHistorical',tag)
+                stcSave.Slider.(tag) = get(hAllSlider(i),'Value');
+            end
+        end
+
+        save([strPath strFileName],'-struct','stcSave');
+        
+        msgbox('Project settings saved successfully');
+    catch ERROR
+        errordlg([ERROR.message '\r\nProject settings did not save correctly!'])
     end
-    
-    save([strPath strFileName],'-struct','stcSave');
 end
 
 %% Image Processing Options
@@ -887,7 +893,7 @@ function handles = tglStartPause_Callback(hObject, ~, handles)
             strErrorTime = datestr(now);
             fprintf(logError,['%-' int2str(length(strErrorTime)) 's\r\n'...
                               '%-' int2str(length(ERROR.message)) 's\r\n'...
-                              ],strErrorTime,ERROR.message);
+                              ],strErrorTime,[ERROR.message '\r\nImage #' int2str(handles.Counter) ' did not capture correctly']);
             strErrorTime = regexprep(strErrorTime,':','');
             stcMemory = memory; %#ok<NASGU>
             save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
