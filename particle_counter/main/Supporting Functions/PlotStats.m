@@ -31,7 +31,19 @@ function handles = PlotStats(varargin)
         % Plots the average of the g/L so far as a red line
         hold(handles.axeGperL,'on')
         plot(intGperL(:,1),ones(i,1)*mean(intGperL(:,2)),'r','Parent',handles.axeGperL);
-        plot(intGperL(:,1),ones(i,1)*mean(intGperL(max(end-20,1):end,2)),'g','Parent',handles.axeGperL);
+        
+        if handles.Counter > 500
+            index = mod(handles.Counter-1,500)+1;
+            if index < 20
+                localAvgGperL = mean([intGperL(500-(19-index):500,2);intGperL(1:index,2)]);
+            else
+                localAvgGperL = mean(intGperL(index-19:index,2));
+            end
+        else
+            localAvgGperL = mean(intGperL(max(end-19,1):end,2));
+        end
+        plot(intGperL(:,1),ones(i,1)*localAvgGperL,'g','Parent',handles.axeGperL);
+        
         hold(handles.axeGperL,'off')
 
         % Only shows the 10 most recent results (use slider to see history)
@@ -39,16 +51,7 @@ function handles = PlotStats(varargin)
         ylabel(handles.axeGperL,'Grams/Liter');
         xlim(handles.axeGperL,[handles.Counter - 10, handles.Counter]);
         handles.Stats.avgGperL(mod(handles.Counter-1,500)+1,:) = [handles.Counter,mean(intGperL(:,2))];
-        if handles.Counter > 500
-            index = mod(handles.Counter-1,500)+1;
-            if index < 20
-                handles.Stats.localAvgGperL(index,:) = [handles.Counter,mean([intGperL(500-(19-index):500,2);intGperL(1:index,2)])];
-            else
-                handles.Stats.localAvgGperL(index,:) = [handles.Counter,mean(intGperL(index-19:index,2))];
-            end
-        else
-            handles.Stats.localAvgGperL(handles.Counter,:) = [handles.Counter,mean(intGperL(max(end-19,1):end,2))];
-        end
+        handles.Stats.localAvgGperL(mod(handles.Counter-1,500)+1,:) = [handles.Counter,localAvgGperL];
     end
     
     % Histogram

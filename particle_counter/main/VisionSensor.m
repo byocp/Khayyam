@@ -723,6 +723,7 @@ function tglConfig_Callback(hObject, ~, handles) %#ok<DEFNU>
     else
         set(handles.pnlContinuous,'Visible','off')
         set(handles.tglStartPause,'Visible','off')
+        handles = tglStartPause_Callback(handles.tglStartPause, [], handles);
         set(handles.pnlImageSettings,'Visible','on')
         set(handles.pnlCalculation,'Visible','on')
         set(handles.pnlCameraSettings,'Visible','on')
