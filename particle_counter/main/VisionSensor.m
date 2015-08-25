@@ -900,7 +900,26 @@ function handles = tglStartPause_Callback(hObject, ~, handles)
             save(['ErrorLog\ ' strErrorTime '.mat'],'ERROR','stcMemory');
 
             fclose(logError);
-            errordlg(['Image #' int2str(handles.Counter) ' did not capture correctly'],'','modal');
+%             errordlg(['Image #' int2str(handles.Counter) ' did not capture correctly'],'','modal');
+
+            %%% Save last image statistics again
+            if mod(handles.Counter-1,500) == 0
+                tempCounter = 500;
+            else
+                tempCounter = mod(handles.Counter-1,500);
+            end
+            
+            bins = histc(handles.Stats.Diameters{tempCounter}{3},0:0.1:3.5);
+            if isempty(bins)
+                bins = zeros(1,36);
+            end
+            formatSpec = '%d,';
+            formatSpec = repmat(formatSpec,1,length(bins)-1);
+            formatSpec = ['%d,%2.6f,' formatSpec '%d,%f\r\n']; %#ok<AGROW>
+            fidPLC = fopen('C:\VisionSensor\MATLAB2PLC.csv','w');
+            fprintf(fidPLC,formatSpec,handles.Counter,handles.Stats.GperL{tempCounter}(2),bins,getBoxVal(handles.txtFrameVol));
+            fclose(fidPLC);
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         end
         
         % Increment master counter
